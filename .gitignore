@@ -1,3 +1,6 @@
+cert.pem
+key.pem
+venv*/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

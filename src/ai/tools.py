@@ -7,7 +7,8 @@ NAME_MOCK = ["Vini", "Helen", "João", "Bruno", "Carla", "Diego", "Helena"]
 def create_tools(db: Database, face_detector: FaceDetector):
 
     def check_face() -> str:
-        """
+        """ Tool para verificar se uma pessoa é ou não conhecida.
+            Se for conhecida, retorna seu nome, caso não, a string Desconhecido.
         """
         encoding = face_detector.current_face_encoding
 
@@ -18,7 +19,8 @@ def create_tools(db: Database, face_detector: FaceDetector):
         return result[0].name if result else "Desconhecido"
                                                           
     def signup() -> bool:
-        """
+        """ Tool para cadastrar uma pessoa no banco de dados. 
+            Se retornar True, o cadastro foi bem sucedido, caso contrário, não.
         """
         encoding = face_detector.current_face_encoding
 
