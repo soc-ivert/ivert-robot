@@ -6,10 +6,9 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
-from src.vision.face_detector import FaceDetector
+from src.core.robot import Robot
 
-
-def create_app(detector: FaceDetector) -> FastAPI:
+def create_app(robot: Robot) -> FastAPI:
 
     app = FastAPI()
     app.mount("/static", StaticFiles(directory="src/interface/static"), name="static")
@@ -35,7 +34,7 @@ def create_app(detector: FaceDetector) -> FastAPI:
                 if frame is None:
                     continue
 
-                detector.push_frame(frame)
+                robot.push_frame(frame)
 
         except WebSocketDisconnect:
             print("Desconectado")
