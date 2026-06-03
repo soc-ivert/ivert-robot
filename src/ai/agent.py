@@ -1,67 +1,141 @@
 from google import genai
 from google.genai import types
 from pathlib import Path
+from src.exceptions import AgentError, ChatCreationError, SystemPromptError
+import os
+from dotenv import load_dotenv
 
-API_KEY = ""
+load_dotenv()
+API_KEY = os.getenv("GEMINI_API_KEY")
 MODEL = "gemini-2.5-flash-lite"
 
 class Agent():
- 
+    """ Agente de IA baseado na API do Google Gemini.
+
+    Gerencia a comunicação com o modelo Gemini, lidando com a inicialização do cliente, 
+    carregamento de prompts do sistema, gerenciamento de histórico de conversas e execução de ferramentas (tools).
+
+    Attributes:
+        _MAX_MESSAGES (int): Número máximo de mensagens mantidas no histórico do chat.
+    """
+
     _MAX_MESSAGES = 16
 
     def __init__(self, tools: list):
-        self._client = genai.Client(api_key=API_KEY)
-        self._tools = tools
-        self._prompts = self._load_prompts()
-        self._chat = self._create_chat()
- 
-    # TODO Ler toda a pasta prompts, sem especificar nomes
+        """ Inicializa o Agente de IA.
+
+        Args:
+            tools: Lista de ferramentas (funções) que o agente pode executar.
+
+        Raises:
+            AgentError: Se ocorrer qualquer erro durante a inicialização do agente ou subcomponentes.
+        """
+
+        try:
+            self._client = genai.Client(api_key=API_KEY)
+            self._tools = tools
+            self._prompts = self._load_prompts()
+            self._chat = self._create_chat()
+
+        except AgentError:
+            raise
+        except Exception:
+            raise AgentError("Erro ao iniciar o agente de IA.")
+
+
     def _load_prompts(self):
+        """ Carrega e consolida os arquivos de prompt do sistema.
+
+        Lê os arquivos de configuração contidos no diretório de prompts e os estrutura em um objeto de conteúdo 
+        adequado para as instruções do sistema do Gemini.
+
+        Returns:
+            types.Content: Objeto estruturado contendo as instruções do sistema divididas em partes.
+
+        Raises:
+            SystemPromptError: Se houver falha na leitura ou localização dos arquivos de prompt.
+        """
 
         base_path = Path(__file__).parent
 
-        with open(base_path / "prompts" / "sys_prompt.md", "r", encoding="utf-8") as f:
-            sys_prompt = f.read()
+        try: # TODO Ler toda a pasta prompts, sem especificar nomes
+            with open(base_path / "prompts" / "sys_prompt.md", "r", encoding="utf-8") as f:
+                sys_prompt = f.read()
 
-        with open(base_path / "prompts" / "ivert_data.md", "r", encoding="utf-8") as f:
-            ivert_infos = f.read()
+            with open(base_path / "prompts" / "ivert_data.md", "r", encoding="utf-8") as f:
+                ivert_infos = f.read()
 
-        with open(base_path / "prompts" / "ivert_events.csv", "r", encoding="utf-8") as f:
-            ivert_events = f.read()
+            with open(base_path / "prompts" / "ivert_events.csv", "r", encoding="utf-8") as f:
+                ivert_events = f.read()
 
-        prompts = types.Content(
-            role="system",
-            parts=[
-                types.Part.from_text(text=sys_prompt),
-                types.Part.from_text(text=ivert_infos),
-                types.Part.from_text(text=ivert_events)
-            ]
-        )
+            prompts = types.Content(
+                role="system",
+                parts=[
+                    types.Part.from_text(text=sys_prompt),
+                    types.Part.from_text(text=ivert_infos),
+                    types.Part.from_text(text=ivert_events)
+                ]
+            )
+            
+            return prompts
+        
+        except Exception:
+            raise SystemPromptError("Erro ao ler arquivos de prompt.")
 
-        return prompts
 
     def _create_chat(self):
-        """ Cria uma nova sessão de chat com o Gemini.
+        """Cria uma nova sessão de chat com o Gemini.
+
+        Returns:
+            Uma nova instância de sessão de chat do Gemini.
+
+        Raises:
+            ChatCreationError: Se falhar ao criar o chat.
         """
-        return self._client.chats.create(
-            model=MODEL,
-            config=types.GenerateContentConfig(
-                system_instruction=self._prompts,
-                tools=self._tools,
-            ),
-        )
+        try:
+            return self._client.chats.create(
+                model=MODEL,
+                config=types.GenerateContentConfig(
+                    system_instruction=self._prompts,
+                    tools=self._tools,
+                ),
+            )
+        except Exception:
+            raise ChatCreationError("Erro ao criar uma sessão de chat.")
+
  
-    def reset(self):
-        """ Inicia uma nova sessão, reinicinado a conversa e limpando o histórico.
+    def reset(self) -> bool:
+        """Reinicia a conversa atual limpando todo o histórico do chat.
+
+        Returns:
+            bool: True se o chat foi reiniciado com sucesso, False caso contrário.
         """
-        self._chat = self._create_chat()
+        try:
+            self._chat = self._create_chat()
+            return True
+        except ChatCreationError:
+            return False
  
-    def send(self, user_input: str) -> str:
-        """ Envia uma mensagem e retorna a resposta em texto.
+    def send(self, user_input: str) -> str | None:
+        """ Envia uma mensagem do usuário para o agente.
+
+        Também monitora o tamanho do histórico. Caso exceda o limite definido em `_MAX_MESSAGES`, 
+        as mensagens mais antigas são apagadas para otimizar o uso de tokens e contexto.
+
+        Args:
+            user_input: O texto ou pergunta enviado pelo usuário.
+
+        Returns:
+            str: A resposta em texto gerada pelo Gemini.
+            None: Se ocorrer um erro durante o envio ou geração da resposta.
         """
 
+        # Verifica o tamanho do histórico para limitar o contexto.
         if len(self._chat.get_history()) > self._MAX_MESSAGES:
             self._chat.history = self._chat.get_history()[-self._MAX_MESSAGES:]
 
-        response = self._chat.send_message(user_input)
-        return response.text
+        try:
+            response = self._chat.send_message(user_input)
+            return response.text
+        except Exception:
+            return None
