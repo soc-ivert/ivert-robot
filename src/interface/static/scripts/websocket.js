@@ -31,6 +31,18 @@ ws.onerror = (erro) => {
     status.textContent = 'Erro na conexão WebSocket.';
 };
 
+ws.onmessage = (event) => {
+
+    const { type, data } = JSON.parse(event.data);
+
+    const handlers = {
+        resposta: () => falar(data.text)
+    };
+
+    handlers[type]?.();
+
+}
+
 async function startVideoCapture() {
 
     try {
@@ -68,5 +80,26 @@ function sendFrames() {
     // Converte o canvas para uma string Base64 no formato JPEG.
     const base64 = canvas.toDataURL('image/jpeg', JPEG_QUALITY).split(',')[1];
 
-    ws.send(base64); // Envia a string para o servidor pelo WebSocket
+    ws.send(JSON.stringify({ tipo: "frame", dados: { imagem: base64}})); // Envia para o servidor pelo WebSocket
 }
+
+/* Somente para testar
+*/
+function falar(texto) {
+    const utterance = new SpeechSynthesisUtterance(texto);
+    utterance.lang = "pt-BR";
+    speechSynthesis.speak(utterance);
+}
+
+function perguntar() {
+    const input = document.getElementById("input-texto");
+    const texto = input.value.trim();
+    if (!texto) return;
+
+    ws.send(JSON.stringify({ tipo: "ask", dados: { texto } }));
+    input.value = "";
+}
+
+document.getElementById("input-texto").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") perguntar();
+});

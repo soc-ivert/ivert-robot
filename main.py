@@ -1,12 +1,22 @@
 import uvicorn
-from src.api.server import create_app
 
-DB_PATH = "data/bot.db"
+from src.core.robot import Robot
+from src.api.server import create_app
 
 def main():
 
-    app = create_app(robot=None)
-    uvicorn.run(app, host="0.0.0.0", port=8500, ssl_keyfile="key.pem", ssl_certfile="cert.pem")
+    bot = Robot()
+    bot.start()
+
+    app = create_app(robot=bot)
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=8000,
+        ssl_keyfile="key.pem",
+        ssl_certfile="cert.pem",
+        log_level="warning",
+    )
 
 if __name__ == "__main__":
     main()

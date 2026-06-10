@@ -10,14 +10,11 @@ class Robot():
         self._detector = FaceDetector(camera_source)
         self._agent = Agent(tools=create_tools(self._db, self._detector))
 
+    def start(self):
+        self._detector.start_detection()
+
     def push_frame(self, frame):
         self._detector.push_frame(frame)
 
-    def run(self):
-        
-        self._detector.start_detection()
-        
-        while True:
-            ask = input("Ask: ")
-            answer = self._agent.send(ask)
-            print(answer)
+    def send_ask(self, ask):
+        return self._agent.send(ask)
