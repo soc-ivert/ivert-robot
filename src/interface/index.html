@@ -9,18 +9,22 @@
 
     <body>
 
+        <div id="debug">
+            <p>Debug</p>
+            <p id="camera-status">Aguardando câmera...</p>
+        </div>
+
         <video id="video" autoplay playsinline muted></video>
         <canvas id="canvas" style="display:none"></canvas>
-        <p id="status">Aguardando câmera...</p>
-
+        
         <!-- Teste -->
         <div id="chat">
             <input type="text" id="input-texto" placeholder="" />
-            <button onclick="perguntar()">Enviar</button>
+            <button onclick="ask()">Enviar</button>
         </div>
 
     </body>
 
-    <script src="static/scripts/video-websocket.js"></script>
+    <script type="module" src="/static/scripts/main.js"></script>
 
 </html>
