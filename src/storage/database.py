@@ -6,18 +6,28 @@ from typing import Optional
 
 @dataclass
 class User:
+    """ Representação de um usuário.
+
+    Attributes:
+        name (str): Nome completo.
+        contact (str): Informação de contato, e-mail ou telefone.
+        encoding (np.ndarray): Vetor de características faciais.
+        id (Optional[int]): gerado automaticamente pelo banco de dados SQLite.
+    """
+
     name: str
     contact: str  # e-mail ou telefone
     encoding: np.ndarray  # gerado por face_recognition.face_encodings()
     id: Optional[int] = field(default=None)
 
     def __repr__(self) -> str:
+        """ Retorna uma representação string do objeto User.
+        """
         return f"User(id={self.id}, name='{self.name}', contact='{self.contact}')"
 
 
 class Database:
-    '''
-    Gerencia a persistência de usuários com reconhecimento facial em SQLite.
+    """ Gerencia a persistência de usuários com reconhecimento facial em SQLite.
 
     Tabela: users
         id       INTEGER PRIMARY KEY AUTOINCREMENT
@@ -26,18 +36,29 @@ class Database:
         encoding BLOB    NOT NULL  (ndarray float64 serializado via tobytes/frombuffer)
 
     Busca por encoding:
-        Como encodings faciais nunca são exatamente iguais entre fotos
-        distintas, a busca retorna o usuário mais próximo (distância
-        euclidiana) cujo encoding seja menor que `tolerance` (padrão 0.6,
-        mesmo valor usado pela lib face_recognition).
-    '''
+        Como encodings faciais nunca são exatamente iguais entre fotos distintas, 
+        a busca retorna o usuário mais próximo (distância euclidiana) cujo encoding 
+        seja menor que `tolerance` (padrão 0.6, mesmo valor usado pela lib face_recognition).
+    """
 
     def __init__(self, db_path: str = "data/bot.db", tolerance: float = 0.6) -> None:
+        """ Inicializa o gerenciador de banco de dados e cria a estrutura necessária.
+
+        Args:
+            db_path: Caminho do arquivo de banco de dados. O padrão é "data/bot.db".
+            tolerance: Limiar de distância euclidiana para o reconhecimento facial.
+              O padrão é 0.6 (mesmo padrão adotado pela biblioteca face_recognition).
+        """
         self._db_path = db_path
         self.tolerance = tolerance
         self._create_table()
 
     def _connect(self) -> sqlite3.Connection:
+        """ Estabelece e configura uma nova conexão com o banco de dados.
+
+        Returns:
+            sqlite3.Connection: Objeto de conexão.
+        """
 
         conn = sqlite3.connect(self._db_path)
         conn.row_factory = sqlite3.Row  # acesso por nome de coluna
@@ -45,6 +66,11 @@ class Database:
         return conn
 
     def _create_table(self) -> None:
+        """ Cria a tabela 'users' caso ela ainda não exista no arquivo de banco.
+
+        A tabela armazena dados textuais brutos e o vetor de características faciais
+        diretamente convertido no formato binário BLOB.
+        """
 
         sql = """
         CREATE TABLE IF NOT EXISTS users (
@@ -60,10 +86,26 @@ class Database:
     # Serialização do encoding (ndarray <-> bytes)
     @staticmethod
     def _ndarray_to_bytes(encoding: np.ndarray) -> bytes:
+        """ Serializa uma ndarray em um fluxo de bytes brutos (BLOB).
+
+        Args:
+            encoding: O array com as características faciais.
+
+        Returns:
+            bytes: Sequência binária correspondente.
+        """
         return encoding.astype(np.float64).tobytes()
 
     @staticmethod
     def _bytes_to_ndarray(data: bytes) -> np.ndarray:
+        """ Serializa uma ndarray em um fluxo de bytes brutos (BLOB).
+
+        Args:
+            encoding: O array com as características faciais.
+
+        Returns:
+            bytes: Sequência binária correspondente.
+        """
         return np.frombuffer(data, dtype=np.float64)
 
     def _row_to_user(self, row: sqlite3.Row) -> User:
@@ -78,10 +120,10 @@ class Database:
         )
 
     def insert(self, user: User) -> User:
-        '''
+        """
         Insere um novo usuário no banco.
         Retorna o mesmo User com o campo `id` preenchido.
-        ''' 
+        """ 
 
         sql = "INSERT INTO users (name, contact, encoding) VALUES (?, ?, ?)"
 
