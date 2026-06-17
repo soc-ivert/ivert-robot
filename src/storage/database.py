@@ -109,8 +109,14 @@ class Database:
         return np.frombuffer(data, dtype=np.float64)
 
     def _row_to_user(self, row: sqlite3.Row) -> User:
-        ''' Transforma uma linha da tabela em um objeto User.
-        '''
+        """ Converte uma linha mapeada do SQLite em uma instância de User.
+
+        Args:
+            row: Linha de dados retornada por uma consulta executada no banco.
+
+        Returns:
+            User: Objeto populado com os dados correspondentes à linha lida.
+        """
 
         return User(
             id=row["id"],
@@ -120,9 +126,14 @@ class Database:
         )
 
     def insert(self, user: User) -> User:
-        """
-        Insere um novo usuário no banco.
-        Retorna o mesmo User com o campo `id` preenchido.
+        """ Insere um novo usuário no banco.
+       
+        Args:
+            user: Uma instância da dataclass User preenchida sem o identificador id.
+
+        Returns:
+            User: A mesma instância de entrada enriquecida com o id gerado 
+            automaticamente pelo banco de dados.
         """ 
 
         sql = "INSERT INTO users (name, contact, encoding) VALUES (?, ?, ?)"
@@ -137,19 +148,23 @@ class Database:
         return user
 
     def search_by(self, column: str, value: object) -> list[User]:
-        '''
-        Retorna usuários com base em uma coluna ou pelo encoding facial.
+        """ Procura no banco com base em alguma coluna especificada.
 
-        Colunas com correspondência exata: 'id', 'name', 'contact'
-            db.search_by("name", "Maria")
-            db.search_by("contact", "maria@email.com")
+        Se a coluna for 'encoding', executa uma busca avançada por proximidade vetorial.
+        Para as demais colunas, realiza uma verificação direta.
 
-        Busca por proximidade facial: 'encoding'
-            db.search_by("encoding", encoding_ndarray)
-            Retorna os usuários cujo encoding tem distância euclidiana
-            menor que `self.tolerance`, ordenados do mais próximo ao
-            mais distante. Retorna lista vazia se nenhum corresponder.
-        '''
+        Args:
+            column: O nome da coluna a ser consultada ('id', 'name', 'contact', 'encoding').
+            value: O termo de busca (pode ser int, str ou um np.ndarray no caso de encoding).
+
+        Returns:
+            list[User]: Uma lista com todos os usuários encontrados. Se nenhum registro for
+            localizado, retorna uma lista vazia.
+
+        Raises:
+            ValueError: Se o argumento fornecido em `column` não fizer parte dos campos 
+              permitidos do banco de dados.
+        """
         if column == "encoding":
             return self._search_by_encoding(value)
 
@@ -168,21 +183,23 @@ class Database:
         return [self._row_to_user(row) for row in rows]
 
     def _search_by_encoding(self, query: np.ndarray) -> list[User]:
-        '''
+        """ Compara um mapeamento facial de busca com os rostos conhecidos salvos no banco.
+        
         Carrega todos os encodings do banco e retorna os usuários dentro
         da tolerância, ordenados por distância crescente.
 
         A distância euclidiana é equivalente ao que face_recognition usa
         internamente em face_recognition.compare_faces().
-        '''
 
-        with self._connect() as conn:
-            rows = conn.execute("SELECT * FROM users").fetchall()
+        Args:
+            query: Vetor extraído do rosto atual a ser procurado.
 
-        if not rows:
-            return []
+        Returns:
+            list[User]: Usuários os quais o desvio matemático está dentro do limite de 
+            `tolerance`, ordenados do mais parecido ao mais distante.
+        """
 
-        users = [self._row_to_user(row) for row in rows]
+        users = self.get_all()
         stored = np.array([u.encoding for u in users])
 
         # Distância euclidiana vetorizada para todos de uma vez
@@ -199,8 +216,11 @@ class Database:
         return [user for user, _ in matches]
 
     def get_all(self) -> list[User]:
-        ''' Retorna todos os usuários cadastrados na tabela users.
-        '''
+        """ Obtem todos os usuários registrados no banco de dados.
+
+        Returns:
+            list[User]: Lista contendo todos registros convertidos em instâncias User.
+        """
 
         sql = "SELECT * FROM users"
 
