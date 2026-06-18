@@ -1,7 +1,7 @@
 'use strict';
 
 function toggleForm(visible) {
-    return;
+    return 0;
 }
 
 export { toggleForm };

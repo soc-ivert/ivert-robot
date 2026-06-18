@@ -2,6 +2,9 @@ from src.storage.database import Database
 from src.vision.face_detector import FaceDetector
 from src.ai.agent import Agent
 from src.ai.tools import create_tools
+from src.core.enums import RobotState
+
+import asyncio
 
 class Robot():
     """ Classe controladora que orquestra as operações do Robô IVERT.
@@ -20,10 +23,15 @@ class Robot():
         self._db = Database()
         self._detector = FaceDetector(camera_source)
         self._agent = Agent(tools=create_tools(self._db, self._detector))
+        self._state = RobotState.SLEEPING
+        self._loop = None
+        self._on_face_detected = None
 
     def start(self):
-        """ Inicia detecção/processamento de imagens do detector.
+        """ Inicializa componentes do robô.
         """
+        self._loop = asyncio.get_event_loop()
+        self._detector.set_face_callback(self._handle_face_detected)
         self._detector.start_detection()
 
     def push_frame(self, frame):
@@ -50,3 +58,45 @@ class Robot():
             None: Caso ocorra alguma falha.
         """
         return self._agent.send(ask)
+
+    def reset_interaction(self) -> bool:
+        """ Reinicia a conversa atual limpando todo o histórico do chat juntamente ao encoding armazenado.
+    
+        Significa uma nova interação iniciando
+            
+        Returns:
+            bool: True se o chat foi reiniciado com sucesso, False caso contrário.
+        """
+        self._detector.clear_encoding()
+        return self._agent.reset()
+
+    def set_state(self, state: RobotState):
+        """ Altera o estado atual do robô.
+
+        Args:
+            RobotState: O novo estado.
+        """
+        self._state = state
+        
+    def get_current_state(self):
+        """ Obtem o estado atual do robô.
+        """
+        return self._state
+    
+    def set_face_callback(self, callback):
+        """ Registra o callback a ser invocado quando o detector identificar um rosto.
+
+        Args:
+            callback: Função assíncrona a ser agendada no event loop ao detectar um rosto.
+        """
+        self._on_face_detected = callback
+
+    def _handle_face_detected(self):
+        """ Ponte entre a thread do FaceDetector e o event loop do asyncio.
+
+        Chamada diretamente pela thread do detector. Agenda o callback assíncrono
+        registrado via `set_face_callback` no event loop do uvicorn, garantindo
+        que a execução ocorra no contexto correto.
+        """
+        if self._on_face_detected and self._loop:
+            self._loop.call_soon_threadsafe(asyncio.ensure_future, self._on_face_detected())

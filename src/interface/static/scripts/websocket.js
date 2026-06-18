@@ -27,7 +27,6 @@ function connect() {
         const handlers = {
             answer: () => speak(data.text),
             state:  () => setState(data.value),
-            form:   () => toggleForm(data.visible),
         };
 
         handlers[type]?.();

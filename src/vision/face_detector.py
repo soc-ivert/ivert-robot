@@ -34,6 +34,7 @@ class FaceDetector:
         self._thread = None
         self._lock = threading.Lock()
         self.source = source
+        self._on_face_detected = None
 
     def start_detection(self):
         """ Inicia o ciclo de detecção facial de forma assíncrona (não-bloqueante).
@@ -59,6 +60,10 @@ class FaceDetector:
         if self._video_capture:
             self._video_capture.release()
             cv2.destroyAllWindows()
+
+    def clear_encoding(self):
+        with self._lock:
+            self.current_face_encoding = None
 
     def push_frame(self, frame):
         """ Injeta um frame capturado por uma fonte externa.
@@ -118,6 +123,9 @@ class FaceDetector:
                             self.current_face_encoding = face_encodings[0]
 
                         self._is_encoding_captured = True
+                        
+                        if self._on_face_detected:
+                            self._on_face_detected()
 
             else: # Se não houver nenhum rosto
                 self._is_encoding_captured = False
@@ -145,3 +153,11 @@ class FaceDetector:
         resized_frame_rgb = cv2.cvtColor(resized_frame, cv2.COLOR_BGR2RGB)
 
         return resized_frame_rgb
+    
+    def set_face_callback(self, callback):
+        """Registra o callback a ser invocado quando um rosto é detectado.
+
+        Args:
+            callback: Função a ser chamada ao detectar um rosto pela primeira vez.
+        """
+        self._on_face_detected = callback
