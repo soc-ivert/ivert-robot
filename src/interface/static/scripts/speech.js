@@ -1,5 +1,7 @@
 'use strict';
 
+import { send } from './websocket.js';
+
 function speak(text) {
 
     const utterance = new SpeechSynthesisUtterance(text);

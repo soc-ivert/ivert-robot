@@ -1,4 +1,5 @@
 # src/api/server.py
+import asyncio
 import json
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
@@ -11,6 +12,11 @@ def create_app(robot: Robot) -> FastAPI:
 
     app = FastAPI()
     app.mount("/static", StaticFiles(directory="src/interface/static"), name="static")
+
+    @app.on_event("startup")
+    async def startup():
+        robot.start()
+        print("[SERVER] Robo iniciado")
 
     @app.get("/")
     async def root():

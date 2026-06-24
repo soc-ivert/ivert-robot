@@ -6,9 +6,9 @@ from src.api.server import create_app
 def main():
 
     bot = Robot()
-    bot.start()
-
     app = create_app(robot=bot)
+    
+    print("[MAIN] Iniciando servidor")
     uvicorn.run(
         app,
         host="0.0.0.0",

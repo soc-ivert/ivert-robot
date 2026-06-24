@@ -1,7 +1,9 @@
 'use strict';
 
-function toggleForm(visible) {
-    return 0;
+var botState = document.getElementById('bot-state');
+
+function setState(state){
+    botState.textContent = state
 }
 
-export { toggleForm };
+export { setState };

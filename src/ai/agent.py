@@ -137,5 +137,6 @@ class Agent():
         try:
             response = self._chat.send_message(user_input)
             return response.text
-        except Exception:
+        except Exception as e:
+            print("[AGENT] Erro:", e)
             return None

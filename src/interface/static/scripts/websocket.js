@@ -2,7 +2,7 @@
 
 import { startCamera } from './camera.js';
 import { speak } from './speech.js';
-import { toggleForm } from './ui.js';
+import { setState } from './ui.js';
 
 const status = document.getElementById('ws-status');
 const WS_URL = `wss://${location.host}/ws`;
