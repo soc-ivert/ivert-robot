@@ -1,32 +1,97 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 
-    <head>
-        <meta charset="UTF-8" />
-        <title> Robô Ivert </title>
-        <link rel="stylesheet" href="/static/style.css" />
-    </head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Robô</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
 
-    <body>
+  <body>
 
-        <div id="debug">
-            <p>Debug</p>
-            <p id="camera-status">Aguardando câmera...</p>
-            <p id="ws-status">...</p>
-            <p id="bot-state"></p>
+    <!-- ── Debug panel ── -->
+    <div id="debug">
+      <div class="debug-header">
+        <span class="debug-tag">SYS</span>
+        <span class="debug-title">BOT // LOG</span>
+      </div>
+      <div class="debug-row">
+        <span class="debug-key">Câmera</span>
+        <span class="debug-val" id="camera-status">aguardando...</span>
+      </div>
+      <div class="debug-row">
+        <span class="debug-key">WebSocket</span>
+        <span class="debug-val" id="ws-status">desconectado</span>
+      </div>
+      <div class="debug-row">
+        <span class="debug-key">Estado</span>
+        <span class="debug-val" id="bot-state">—</span>
+      </div>
+    </div>
+
+    <!-- ── Robot face ── -->
+    <div class="scene">
+
+      <span class="name-tag">Robot</span>
+
+      <div class="face" id="face">
+
+        <!-- cheek blushes -->
+        <div class="cheek cheek-l"></div>
+        <div class="cheek cheek-r"></div>
+
+        <!-- eyes -->
+        <div class="eyes">
+          <div class="eye-socket">
+            <div class="eye-iris">
+              <div class="eye-pupil"></div>
+              <div class="eye-gleam"></div>
+            </div>
+          </div>
+          <div class="eye-socket">
+            <div class="eye-iris">
+              <div class="eye-pupil"></div>
+              <div class="eye-gleam"></div>
+            </div>
+          </div>
         </div>
 
-        <video id="video" autoplay playsinline muted></video>
-        <canvas id="canvas" style="display:none"></canvas>
-        
-        <!-- Teste -->
-        <div id="chat">
-            <input type="text" id="input-texto" placeholder="" />
-            <button onclick="ask()">Enviar</button>
+        <!-- mouth + overlays -->
+        <div class="mouth-wrap">
+          <div class="mouth"></div>
+          <span class="greeting-text">Diga "oi robô" para conversar</span>
+          <div class="thought-bubble">
+            <div class="thought-dot"></div>
+            <div class="thought-dot"></div>
+            <div class="thought-dot"></div>
+          </div>
         </div>
 
-    </body>
+      </div>
+
+      <!-- status dots + label -->
+      <div class="status-bar">
+        <div class="status-dot active"></div>
+        <div class="status-dot active"></div>
+        <div class="status-dot" id="status-dot-3"></div>
+        <span class="state-label" id="state-label">◌ sleeping</span>
+      </div>
+
+    </div>
+
+    <!-- ── Hidden media elements ── -->
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="canvas" style="display:none"></canvas>
+
+    <!-- ── Chat de teste ── -->
+    <div id="chat">
+      <input type="text" id="input-texto" placeholder="Digite uma mensagem..." />
+      <button onclick="ask()">Enviar</button>
+    </div>
 
     <script type="module" src="/static/scripts/main.js"></script>
+
+  </body>
 
 </html>
