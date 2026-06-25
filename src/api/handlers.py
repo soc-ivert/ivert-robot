@@ -88,7 +88,7 @@ class MessageHandler:
         answer = self._robot.send_ask(data["text"])
         await self._send(json.dumps({
             "type": "answer",
-            "data": { "text": answer }
+            "data": { "text": answer if answer is not None else "error"}
         }))
 
         print("[SERVER] Resposta enviada:", answer)

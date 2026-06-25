@@ -62,18 +62,18 @@ class Agent():
             with open(base_path / "prompts" / "sys_prompt.md", "r", encoding="utf-8") as f:
                 sys_prompt = f.read()
 
-            with open(base_path / "prompts" / "ivert_data.md", "r", encoding="utf-8") as f:
-                ivert_infos = f.read()
+            with open(base_path / "prompts" / "data.md", "r", encoding="utf-8") as f:
+                infos = f.read()
 
-            with open(base_path / "prompts" / "ivert_events.csv", "r", encoding="utf-8") as f:
-                ivert_events = f.read()
+            with open(base_path / "prompts" / "events.csv", "r", encoding="utf-8") as f:
+                events = f.read()
 
             prompts = types.Content(
                 role="system",
                 parts=[
                     types.Part.from_text(text=sys_prompt),
-                    types.Part.from_text(text=ivert_infos),
-                    types.Part.from_text(text=ivert_events)
+                    types.Part.from_text(text=infos),
+                    types.Part.from_text(text=events)
                 ]
             )
             
