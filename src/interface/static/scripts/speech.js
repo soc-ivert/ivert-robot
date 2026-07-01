@@ -2,6 +2,7 @@
 
 import { send } from './websocket.js';
 
+const speakStatus = document.getElementById('speak-status');
 let isSpeaking = false;
 
 const recognition = new webkitSpeechRecognition();
@@ -38,11 +39,13 @@ function speak(text) {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'pt-BR';
     utterance.onend = () => {
+        speakStatus.textContent = "Acabou de falar";
         send({ type: 'speech_end' });
         isSpeaking = false;
         recognition.start();
     };
 
+    speakStatus.textContent = "Falando";
     speechSynthesis.speak(utterance);
 }
 

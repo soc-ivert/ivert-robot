@@ -1,5 +1,6 @@
 'use strict';
 
+const scene      = document.querySelector('.scene');
 const face       = document.getElementById('face');
 const stateEl    = document.getElementById('bot-state');
 const stateLabel = document.getElementById('state-label');
@@ -17,9 +18,9 @@ const STATE_ICONS = {
 
 let currentState = null;
 
-function clearFaceClasses() {
-  for (const cls of [...face.classList]) {
-    if (cls.startsWith('state-')) face.classList.remove(cls);
+function clearStateClasses() {
+  for (const cls of [...scene.classList]) {
+    if (cls.startsWith('state-')) scene.classList.remove(cls);
   }
 }
 
@@ -36,6 +37,8 @@ function updateStatusBar(state) {
 /**
  * setState(state)
  * Muda a expressão do robô e atualiza o painel de debug.
+ * A classe state-X é aplicada em .scene (pai comum do rosto e do
+ * texto de greeting), para que ambos reajam ao mesmo estado.
  * Chamado pelo WebSocket handler em main.js.
  */
 function setState(state) {
@@ -45,9 +48,9 @@ function setState(state) {
   }
   if (state === currentState) return;
 
-  clearFaceClasses();
+  clearStateClasses();
   void face.offsetWidth; // força reflow para transitions CSS dispararem
-  face.classList.add(`state-${state}`);
+  scene.classList.add(`state-${state}`);
   currentState = state;
   updateDebug(state);
   updateStatusBar(state);

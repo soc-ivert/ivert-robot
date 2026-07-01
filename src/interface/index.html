@@ -25,6 +25,14 @@
         <span class="debug-val" id="ws-status">desconectado</span>
       </div>
       <div class="debug-row">
+        <span class="debug-key">Fala</span>
+        <span class="debug-val" id="speak-status">-</span>
+      </div>
+      <div class="debug-row">
+        <span class="debug-key">Ouvindo</span>
+        <span class="debug-val" id="listen-status">-</span>
+      </div>
+      <div class="debug-row">
         <span class="debug-key">Estado</span>
         <span class="debug-val" id="bot-state">—</span>
       </div>
@@ -40,6 +48,13 @@
         <!-- cheek blushes -->
         <div class="cheek cheek-l"></div>
         <div class="cheek cheek-r"></div>
+
+        <!-- zzz floating above face (sleeping state) -->
+        <div class="zzz-wrap">
+          <span class="zzz zzz-1">z</span>
+          <span class="zzz zzz-2">z</span>
+          <span class="zzz zzz-3">Z</span>
+        </div>
 
         <!-- eyes -->
         <div class="eyes">
@@ -60,7 +75,16 @@
         <!-- mouth + overlays -->
         <div class="mouth-wrap">
           <div class="mouth"></div>
-          <span class="greeting-text">Diga "oi robô" para conversar</span>
+
+          <!-- spotify-style audio bars (speaking state) -->
+          <div class="audio-bars">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+          </div>
+
           <div class="thought-bubble">
             <div class="thought-dot"></div>
             <div class="thought-dot"></div>
@@ -69,6 +93,9 @@
         </div>
 
       </div>
+
+      <!-- greeting message, replaces old chat input area -->
+      <span class="greeting-text" id="greeting-text">Diga "oi robô" para conversar</span>
 
       <!-- status dots + label -->
       <div class="status-bar">
@@ -83,12 +110,6 @@
     <!-- ── Hidden media elements ── -->
     <video id="video" autoplay playsinline muted></video>
     <canvas id="canvas" style="display:none"></canvas>
-
-    <!-- ── Chat de teste ── -->
-    <div id="chat">
-      <input type="text" id="input-texto" placeholder="Digite uma mensagem..." />
-      <button onclick="ask()">Enviar</button>
-    </div>
 
     <script type="module" src="/static/scripts/main.js"></script>
 

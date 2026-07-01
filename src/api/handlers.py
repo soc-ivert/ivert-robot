@@ -103,6 +103,7 @@ class MessageHandler:
         Args:
             data: Payload do evento (não utilizado).
         """
+        print("[SPEECH_END] Fim de fala recebido")
         await self.change_state(RobotState.WAITING)
 
 
@@ -132,6 +133,8 @@ class MessageHandler:
         elif state == RobotState.SLEEPING:
             self._cancel_sleep_timer()
             self._robot.reset_interaction()
+        elif state in [RobotState.SPEAKING, RobotState.THINKING]:
+            self._cancel_sleep_timer()
 
 
     async def on_face_detected(self):
