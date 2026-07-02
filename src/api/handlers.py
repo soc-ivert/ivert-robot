@@ -78,14 +78,21 @@ class MessageHandler:
         Args:
             data: Dicionário contendo o texto da pergunta sob a chave 'text'.
         """
+        robot_state = self._robot.get_current_state()
+        ask:str = data["text"]
+        activation_words = ["oi robo", "oi robô", "ei robo", "ei robô"]
 
-        if self._robot.get_current_state() not in [RobotState.WAITING, RobotState.SLEEPING, RobotState.GREETING]:
+        if robot_state not in [RobotState.WAITING, RobotState.SLEEPING, RobotState.GREETING]:
             return
 
-        print("[SERVER] Pergunta recebida:", data["text"])
+        if robot_state in [RobotState.SLEEPING, RobotState.GREETING]:
+            if not any(word in ask.lower() for word in activation_words):
+                return
+
+        print("[SERVER] Pergunta recebida:", ask)
         await self.change_state(RobotState.THINKING)
 
-        answer = self._robot.send_ask(data["text"])
+        answer = self._robot.send_ask(ask)
         await self._send(json.dumps({
             "type": "answer",
             "data": { "text": answer if answer is not None else "error"}
