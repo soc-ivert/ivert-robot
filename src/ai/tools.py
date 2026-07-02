@@ -2,8 +2,6 @@ from src.storage.database import Database, User
 from src.vision.face_detector import FaceDetector
 import random
 
-NAME_MOCK = ["Vini", "Helen", "João", "Bruno", "Carla", "Diego", "Helena"]
-
 def create_tools(db: Database, face_detector: FaceDetector):
 
     def check_face() -> str:
@@ -25,12 +23,15 @@ def create_tools(db: Database, face_detector: FaceDetector):
         result = db.search_by(column="encoding",value=encoding) 
         return result[0].name if result else "Desconhecido"
                                                           
-    def signup() -> bool: # TODO criar fluxo de cadastro e remover mocks para teste
+    def signup(name:str) -> bool:
         """ Cadastra a pessoa atualmente visível na câmera no banco de dados.
         
         Execute esta ferramenta SOMENTE quando o usuário demonstrar a intenção explícita de se cadastrar 
-        ou após ele confirmar a oferta de cadastro. Não é necessário coletar dados como nome ou e-mail do 
-        usuário antes de chamar esta função, pois os dados são obtidos de forma automatizada.
+        ou após ele confirmar a oferta de cadastro. É necessário coletar somente o nome da pessoa antes 
+        de chamar esta função.
+
+        Args:
+            name: O nome do usuário a ser cadatrado.
 
         Returns:
             bool: True se o cadastro foi realizado com sucesso. 
@@ -41,8 +42,7 @@ def create_tools(db: Database, face_detector: FaceDetector):
         if encoding is None:
             return False
 
-        name = random.choice(NAME_MOCK)
-        db.insert(User(name, f"{name}@email.com", face_detector.current_face_encoding))
+        db.insert(User(name, "not needed", face_detector.current_face_encoding))
         return True
     
     return [signup, check_face]
