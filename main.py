@@ -1,7 +1,12 @@
 import uvicorn
-
+import os
+from dotenv import load_dotenv
 from src.core.robot import Robot
 from src.api.server import create_app
+
+load_dotenv()
+if not os.getenv("GEMINI_API_KEY"):
+    raise ValueError("Variável de ambiente GEMINI_API_KEY não configurada")
 
 def main():
 

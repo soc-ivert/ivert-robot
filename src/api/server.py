@@ -1,16 +1,24 @@
-# src/api/server.py
-import asyncio
 import json
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
+from fastapi.middleware.cors import CORSMiddleware
 from src.core.robot import Robot
 from src.api.handlers import MessageHandler
 
 def create_app(robot: Robot) -> FastAPI:
 
     app = FastAPI()
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
     app.mount("/static", StaticFiles(directory="src/interface/static"), name="static")
 
     @app.on_event("startup")

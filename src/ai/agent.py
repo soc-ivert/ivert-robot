@@ -3,10 +3,7 @@ from google.genai import types
 from pathlib import Path
 from src.exceptions import AgentError, ChatCreationError, SystemPromptError
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
-API_KEY = os.getenv("GEMINI_API_KEY")
 MODEL = "gemini-2.5-flash-lite"
 
 class Agent():
@@ -32,7 +29,10 @@ class Agent():
         """
 
         try:
-            self._client = genai.Client(api_key=API_KEY)
+            api_key = os.getenv("GEMINI_API_KEY")
+            if not api_key:
+                raise AgentError("Variável de ambiente GEMINI_API_KEY não configurada no env")
+            self._client = genai.Client(api_key=api_key)
             self._tools = tools
             self._prompts = self._load_prompts()
             self._chat = self._create_chat()
