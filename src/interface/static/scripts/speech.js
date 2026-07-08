@@ -5,36 +5,48 @@ import { send } from './websocket.js';
 const speakStatus = document.getElementById('speak-status');
 let isSpeaking = false;
 
-const recognition = new webkitSpeechRecognition();
-recognition.lang = 'pt-BR';
-recognition.continuous = true;
-recognition.interimResults = false;
-recognition.onresult = (event) => {
+const SpeechAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    const text = event.results[event.results.length - 1][0].transcript;
+if (!SpeechAPI) {
+    speakStatus.textContent = "API de Reconhecimento de Voz Indisponível";
+}
 
-    send({ 
-        type: 'ask', 
-        data: { text } 
-    });
-};
+const recognition = SpeechAPI ? new SpeechAPI() : null;
 
-recognition.onend = () => {
-    if(!isSpeaking) 
-        recognition.start();
-};
+if (recognition) {
+
+    recognition.lang = 'pt-BR';
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.onresult = (event) => {
+
+        const text = event.results[event.results.length - 1][0].transcript;
+
+        send({
+            type: 'ask',
+            data: { text }
+        });
+    };
+
+    recognition.onend = () => {
+        if (!isSpeaking)
+            recognition.start();
+    };
+}
 
 function startListening() {
-    recognition.start();
+    if (recognition)
+        recognition.start();
 }
 
 function speak(text) {
 
-    if(text === "error")
+    if (text === "error")
         text = "Estou indisponível no momento, tente falar comigo mais tarde";
 
     isSpeaking = true;
-    recognition.stop();
+    if (recognition)
+        recognition.stop();
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'pt-BR';
@@ -42,7 +54,8 @@ function speak(text) {
         speakStatus.textContent = "Acabou de falar";
         send({ type: 'speech_end' });
         isSpeaking = false;
-        recognition.start();
+        if (recognition)
+            recognition.start();
     };
 
     speakStatus.textContent = "Falando";

@@ -200,6 +200,10 @@ class Database:
         """
 
         users = self.get_all()
+
+        if not users:
+            return []
+
         stored = np.array([u.encoding for u in users])
 
         # Distância euclidiana vetorizada para todos de uma vez
