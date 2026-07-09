@@ -175,7 +175,12 @@ class Database:
                 f"Coluna '{column}' não permitida. Escolha entre: {allowed | {'encoding'}}"
             )
 
-        sql = f"SELECT * FROM users WHERE {column} = ?" 
+        if column == "id":
+            sql = "SELECT * FROM users WHERE id = ?"
+        elif column == "name":
+            sql = "SELECT * FROM users WHERE name = ?"
+        elif column == "contact":
+            sql = "SELECT * FROM users WHERE contact = ?"
 
         with self._connect() as conn:
             rows = conn.execute(sql, (value,)).fetchall()
