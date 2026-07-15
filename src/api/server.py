@@ -1,5 +1,6 @@
 import json
 import os
+import time
 import hashlib
 import secrets
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPException
@@ -21,6 +22,21 @@ def create_app(robot: Robot) -> FastAPI:
 
     # HASH do token para armazenar no cookie
     SESSION_VALUE = hashlib.sha256(ACCESS_TOKEN.encode("utf-8")).hexdigest()
+    
+    MAX_FAILED_ATTEMPTS = 5
+    LOCKOUT_SECONDS = 600  # 10 minutos bloqueado após exceder o limite
+    _failed_attempts: dict[str, list[float]] = {}
+
+    def _is_locked_out(client_ip: str) -> bool:
+
+        now = time.time()
+        recent = [t for t in _failed_attempts.get(client_ip, []) if now - t < LOCKOUT_SECONDS]
+        _failed_attempts[client_ip] = recent
+
+        return len(recent) >= MAX_FAILED_ATTEMPTS
+
+    def _register_failure(client_ip: str) -> None:
+        _failed_attempts.setdefault(client_ip, []).append(time.time())
 
     @app.on_event("startup")
     async def startup():
@@ -30,11 +46,21 @@ def create_app(robot: Robot) -> FastAPI:
     @app.get("/")
     async def root(request: Request, token: str = None):
 
+        client_ip = request.client.host if request.client else "unknown"
+
         # Se há token na URL, valida e, se correto, grava cookie e redireciona
         if token is not None:
 
+            if _is_locked_out(client_ip):
+                print(f"[SERVER] IP {client_ip} bloqueado por excesso de tentativas com token inválido")
+                raise HTTPException(
+                    status_code=429,
+                    detail="Muitas tentativas inválidas. Tente novamente mais tarde."
+                )
+
             if not secrets.compare_digest(token, ACCESS_TOKEN):
-                print("[SERVER] Tentativa inválida de acesso com token inválido")
+                _register_failure(client_ip)
+                print(f"[SERVER] Tentativa inválida de acesso com token inválido (IP {client_ip})")
                 raise HTTPException(status_code=403, detail="Acesso inválido.")
 
             response = RedirectResponse(url="/", status_code=303)
@@ -61,8 +87,6 @@ def create_app(robot: Robot) -> FastAPI:
     async def websocket_endpoint(ws: WebSocket):
 
         # Valida Origin x Host (proteção CSWSH)
-        
-        
         origin = ws.headers.get("origin") # de onde a página que iniciou a conexão foi carregada.
         host = ws.headers.get("host") # endereço que o cliente usou para chegar até este servidor
 
