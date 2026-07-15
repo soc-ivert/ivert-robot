@@ -59,7 +59,30 @@ def create_app(robot: Robot) -> FastAPI:
 
     @app.websocket("/ws")
     async def websocket_endpoint(ws: WebSocket):
+
+        # Valida Origin x Host (proteção CSWSH)
         
+        
+        origin = ws.headers.get("origin") # de onde a página que iniciou a conexão foi carregada.
+        host = ws.headers.get("host") # endereço que o cliente usou para chegar até este servidor
+
+        allowed_origins = set()
+        if host:
+            allowed_origins.add(f"http://{host}")
+            allowed_origins.add(f"https://{host}")
+
+        if origin and origin not in allowed_origins:
+            print(f"[SERVER] Conexão WebSocket rejeitada: origem não autorizada ({origin})")
+            await ws.close(code=1008)
+            return
+
+        # Validação do cookie de sessão (Passo 3)
+        cookie_session = ws.cookies.get("tablet_session")
+        if not cookie_session or not secrets.compare_digest(cookie_session, SESSION_VALUE):
+            print("[SERVER] Conexão WebSocket rejeitada: cookie de sessão ausente ou inválido")
+            await ws.close(code=1008)
+            return
+
         await ws.accept()
         handler = MessageHandler(robot, ws.send_text)
 
