@@ -15,7 +15,7 @@ def create_tools(db: Database, face_detector: FaceDetector):
                  "Desconhecido" se a pessoa não possuir cadastro;
                  "Nenhum rosto detectado na câmera" se não houver ninguém visível.
         """
-        encoding = face_detector.current_face_encoding
+        encoding = face_detector.get_current_encoding()
 
         if encoding is None:
             return "Nenhum rosto detectado na câmera"
@@ -37,12 +37,12 @@ def create_tools(db: Database, face_detector: FaceDetector):
             bool: True se o cadastro foi realizado com sucesso. 
                   False se falhar (geralmente porque nenhum rosto foi detectado ou posicionado corretamente na câmera).
         """
-        encoding = face_detector.current_face_encoding
+        encoding = face_detector.get_current_encoding()
 
         if encoding is None:
             return False
 
-        db.insert(User(name=name, encoding=face_detector.current_face_encoding))
+        db.insert(User(name=name, encoding=encoding))
         return True
     
     return [signup, check_face]

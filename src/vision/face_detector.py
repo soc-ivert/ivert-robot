@@ -65,6 +65,18 @@ class FaceDetector:
         with self._lock:
             self.current_face_encoding = None
 
+    def get_current_encoding(self):
+        """ Retorna o encoding facial atual de forma thread-safe.
+
+        Utiliza o lock interno para garantir que o valor lido não concorra
+        com uma escrita simultânea feita pela thread de detecção.
+
+        Returns:
+            np.ndarray | None: O vetor facial atual, ou None se nenhum rosto estiver presente.
+        """
+        with self._lock:
+            return self.current_face_encoding
+
     def push_frame(self, frame):
         """ Injeta um frame capturado por uma fonte externa.
 
