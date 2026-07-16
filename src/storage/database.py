@@ -11,20 +11,18 @@ class User:
 
     Attributes:
         name (str): Nome completo.
-        contact (str): Informação de contato, e-mail ou telefone.
         encoding (np.ndarray): Vetor de características faciais.
         id (Optional[int]): gerado automaticamente pelo banco de dados SQLite.
     """
 
     name: str
-    contact: str  # e-mail ou telefone
     encoding: np.ndarray  # gerado por face_recognition.face_encodings()
     id: Optional[int] = field(default=None)
 
     def __repr__(self) -> str:
         """ Retorna uma representação string do objeto User.
         """
-        return f"User(id={self.id}, name='{self.name}', contact='{self.contact}')"
+        return f"User(id={self.id}, name='{self.name}')"
 
 
 class Database:
@@ -33,7 +31,6 @@ class Database:
     Tabela: users
         id       INTEGER PRIMARY KEY AUTOINCREMENT
         name     TEXT    NOT NULL
-        contact  TEXT    NOT NULL  (e-mail ou telefone)
         encoding BLOB    NOT NULL  (ndarray float64 serializado via tobytes/frombuffer)
 
     Busca por encoding:
@@ -82,14 +79,12 @@ class Database:
         CREATE TABLE IF NOT EXISTS users (
             id       INTEGER PRIMARY KEY AUTOINCREMENT,
             name     TEXT    NOT NULL,
-            contact  TEXT    NOT NULL,
             encoding BLOB    NOT NULL
         );
         """
         with self._connect() as conn:
             conn.execute(sql)
 
-    # Serialização do encoding (ndarray <-> bytes)
     @staticmethod
     def _ndarray_to_bytes(encoding: np.ndarray) -> bytes:
         """ Serializa uma ndarray em um fluxo de bytes brutos (BLOB).
@@ -104,13 +99,13 @@ class Database:
 
     @staticmethod
     def _bytes_to_ndarray(data: bytes) -> np.ndarray:
-        """ Serializa uma ndarray em um fluxo de bytes brutos (BLOB).
+        """ Deserializa um fluxo de bytes brutos (BLOB) de volta em uma ndarray.
 
         Args:
-            encoding: O array com as características faciais.
+            data: Sequência binária correspondente ao array serializado.
 
         Returns:
-            bytes: Sequência binária correspondente.
+            np.ndarray: O array reconstituído com as características faciais.
         """
         return np.frombuffer(data, dtype=np.float64)
 
@@ -127,7 +122,6 @@ class Database:
         return User(
             id=row["id"],
             name=row["name"],
-            contact=row["contact"],
             encoding=self._bytes_to_ndarray(row["encoding"]),
         )
 
@@ -142,12 +136,12 @@ class Database:
             automaticamente pelo banco de dados.
         """ 
 
-        sql = "INSERT INTO users (name, contact, encoding) VALUES (?, ?, ?)"
+        sql = "INSERT INTO users (name, encoding) VALUES (?, ?)"
 
         with self._connect() as conn:
             cursor = conn.execute(
                 sql,
-                (user.name, user.contact, self._ndarray_to_bytes(user.encoding)),
+                (user.name, self._ndarray_to_bytes(user.encoding)),
             )
             user.id = cursor.lastrowid
 
@@ -160,7 +154,7 @@ class Database:
         Para as demais colunas, realiza uma verificação direta.
 
         Args:
-            column: O nome da coluna a ser consultada ('id', 'name', 'contact', 'encoding').
+            column: O nome da coluna a ser consultada ('id', 'name', 'encoding').
             value: O termo de busca (pode ser int, str ou um np.ndarray no caso de encoding).
 
         Returns:
@@ -174,7 +168,7 @@ class Database:
         if column == "encoding":
             return self._search_by_encoding(value)
 
-        allowed = {"id", "name", "contact"}
+        allowed = {"id", "name"}
 
         if column not in allowed:
             raise ValueError(
@@ -185,8 +179,6 @@ class Database:
             sql = "SELECT * FROM users WHERE id = ?"
         elif column == "name":
             sql = "SELECT * FROM users WHERE name = ?"
-        elif column == "contact":
-            sql = "SELECT * FROM users WHERE contact = ?"
 
         with self._connect() as conn:
             rows = conn.execute(sql, (value,)).fetchall()

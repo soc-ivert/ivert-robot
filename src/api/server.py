@@ -114,7 +114,11 @@ def create_app(robot: Robot) -> FastAPI:
         try:
             while True:
                 packet = await ws.receive_text()
-                await handler.route(json.loads(packet))
+                try:
+                    payload = json.loads(packet)
+                    await handler.route(payload)
+                except json.JSONDecodeError:
+                    print("[SERVER] Pacote inválido recebido")
 
         except WebSocketDisconnect:
             print("[SERVER] Desconectado")

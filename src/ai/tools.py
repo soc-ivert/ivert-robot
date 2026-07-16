@@ -42,7 +42,7 @@ def create_tools(db: Database, face_detector: FaceDetector):
         if encoding is None:
             return False
 
-        db.insert(User(name, "not needed", face_detector.current_face_encoding))
+        db.insert(User(name=name, encoding=face_detector.current_face_encoding))
         return True
     
     return [signup, check_face]
