@@ -56,25 +56,24 @@ class Agent():
             SystemPromptError: Se houver falha na leitura ou localização dos arquivos de prompt.
         """
 
-        base_path = Path(__file__).parent
+        # Caminho do diretório contendo os prompts do sistema
+        prompts_dir = Path(__file__).parent / "prompts"
 
-        try: # TODO Ler toda a pasta prompts, sem especificar nomes
-            with open(base_path / "prompts" / "sys_prompt.md", "r", encoding="utf-8") as f:
-                sys_prompt = f.read()
+        try:
+            parts_list = []
+        
+            for file_path in sorted(prompts_dir.iterdir()):
+                if file_path.is_file():
+                    with open(file_path, "r", encoding="utf-8") as f:
+                        content = f.read()
+                        parts_list.append(types.Part.from_text(text=content))
 
-            with open(base_path / "prompts" / "data.md", "r", encoding="utf-8") as f:
-                infos = f.read()
-
-            with open(base_path / "prompts" / "events.csv", "r", encoding="utf-8") as f:
-                events = f.read()
+            if not parts_list:
+                raise SystemPromptError("Nenhum arquivo de prompt encontrado.")
 
             prompts = types.Content(
                 role="system",
-                parts=[
-                    types.Part.from_text(text=sys_prompt),
-                    types.Part.from_text(text=infos),
-                    types.Part.from_text(text=events)
-                ]
+                parts=parts_list
             )
             
             return prompts

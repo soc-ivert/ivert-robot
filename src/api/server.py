@@ -110,6 +110,8 @@ def create_app(robot: Robot) -> FastAPI:
 
         await ws.accept()
         handler = MessageHandler(robot, ws.send_text)
+        
+        await handler.send_initial_state()
 
         try:
             while True:

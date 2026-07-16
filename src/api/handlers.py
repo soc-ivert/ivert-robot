@@ -30,6 +30,18 @@ class MessageHandler:
         self._robot.set_face_callback(self.on_face_detected)
         self._sleep_task: asyncio.Task | None = None
 
+    async def send_initial_state(self):
+        """ Envia o estado atual do robô ao tablet conectado para sincronizar ao conectar/reconectar.
+        """
+        state = self._robot.get_current_state()
+        print(f"[HANDLER] Enviando estado inicial: {state.value}")
+        
+        await self._send(json.dumps({
+            "type": "state",
+            "data": { 
+                "value": state.value 
+            }
+        }))
 
     async def route(self, message: dict):
         """ Roteia uma mensagem recebida pelo WebSocket ao handler correspondente.
