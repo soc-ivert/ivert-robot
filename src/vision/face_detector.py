@@ -63,6 +63,7 @@ class FaceDetector:
 
     def clear_encoding(self):
         with self._lock:
+            self._is_encoding_captured = False
             self.current_face_encoding = None
 
     def get_current_encoding(self):
@@ -99,7 +100,7 @@ class FaceDetector:
         try:
             # Inicializa a captura de vídeo física apenas se houver uma fonte local definida (ex: câmera usb)
             if self.source is not None:
-                self._video_capture = cv2.VideoCapture(self.source, cv2.CAP_DSHOW)
+                self._video_capture = cv2.VideoCapture(self.source)
 
             while self._is_running:
                 try:
@@ -133,14 +134,14 @@ class FaceDetector:
                             if face_encodings:
                                 with self._lock:
                                     self.current_face_encoding = face_encodings[0]
-
-                                self._is_encoding_captured = True
+                                    self._is_encoding_captured = True
                                 
                                 if self._on_face_detected:
                                     self._on_face_detected()
 
                     else: # Se não houver nenhum rosto
-                        self._is_encoding_captured = False
+                        with self._lock:
+                            self._is_encoding_captured = False
 
                     time.sleep(0.02)
                 except Exception as e:
