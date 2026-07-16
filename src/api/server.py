@@ -68,6 +68,7 @@ def create_app(robot: Robot) -> FastAPI:
                 key="tablet_session",
                 value=SESSION_VALUE,
                 httponly=True,
+                secure=True,
                 samesite="lax",
                 max_age=3600 * 24 * 365 * 10,  # 10 anos: sessão de longa duração
             )

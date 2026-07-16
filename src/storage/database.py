@@ -1,5 +1,6 @@
 import sqlite3
 import numpy as np
+import os
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -50,6 +51,11 @@ class Database:
               O padrão é 0.6 (mesmo padrão adotado pela biblioteca face_recognition).
         """
         self._db_path = db_path
+        
+        # Garante que a pasta 'data/' exista
+        if os.path.dirname(self._db_path):
+            os.makedirs(os.path.dirname(self._db_path), exist_ok=True)
+
         self.tolerance = tolerance
         self._create_table()
 

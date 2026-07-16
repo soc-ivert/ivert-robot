@@ -84,53 +84,77 @@ class FaceDetector:
         faz a leitura física do dispositivo.
         """
         
-        if self.source is not None:
-            # Inicia a captura de vídeo
-            self._video_capture = cv2.VideoCapture(self.source, cv2.CAP_DSHOW)
-
-        while self._is_running:
-
+        try:
+            # Inicializa a captura de vídeo física apenas se houver uma fonte local definida (ex: câmera usb)
             if self.source is not None:
-                
-                # Captura um único frame (quadro) de vídeo junto a uma flag indicando se ele foi de fato capturado
-                ret, frame = self._video_capture.read()
-                
-                # Se houver algum erro de comunicação com a câmera, encerra
-                if not ret or frame is None:
-                    print("Erro ao acessar a câmera ou ao realizar captura.")
-                    break
+                self._video_capture = cv2.VideoCapture(self.source, cv2.CAP_DSHOW)
 
-                with self._lock:
-                    self.frame = frame
-
-            with self._lock:
-                frame = self.frame
-
-            if frame is None:
-                time.sleep(0.02)
-                continue
-
-            processed_frame = self.__process_frame(frame)
-            self._face_locations = fcrg.face_locations(processed_frame)
-
-            if self._face_locations: # Se houver algum rosto sendo detectado
-                if not self._is_encoding_captured: # Se o encoding ainda não tiver sido capturado 
-                    
-                    # Captura o mapeamento do rosto
-                    face_encodings = fcrg.face_encodings(processed_frame, self._face_locations)
-                    if face_encodings:
-                        with self._lock:
-                            self.current_face_encoding = face_encodings[0]
-
-                        self._is_encoding_captured = True
+            while self._is_running:
+                try:
+                    if self.source is not None:
+                        # Captura um único frame (quadro) de vídeo junto a uma flag indicando se ele foi de fato capturado
+                        ret, frame = self._video_capture.read()
                         
-                        if self._on_face_detected:
-                            self._on_face_detected()
+                        # Se houver algum erro de comunicação com a câmera física, encerra o loop
+                        if not ret or frame is None:
+                            print("Erro ao acessar a câmera ou ao realizar captura.")
+                            break
 
-            else: # Se não houver nenhum rosto
-                self._is_encoding_captured = False
+                        with self._lock:
+                            self.frame = frame
 
-            time.sleep(0.02)
+                    with self._lock:
+                        frame = self.frame
+
+                    if frame is None:
+                        time.sleep(0.02)
+                        continue
+
+                    processed_frame = self.__process_frame(frame)
+                    self._face_locations = fcrg.face_locations(processed_frame)
+
+                    if self._face_locations: # Se houver algum rosto sendo detectado
+                        if not self._is_encoding_captured: # Se o encoding ainda não tiver sido capturado 
+                            
+                            # Captura o mapeamento do rosto
+                            face_encodings = fcrg.face_encodings(processed_frame, self._face_locations)
+                            if face_encodings:
+                                with self._lock:
+                                    self.current_face_encoding = face_encodings[0]
+
+                                self._is_encoding_captured = True
+                                
+                                if self._on_face_detected:
+                                    self._on_face_detected()
+
+                    else: # Se não houver nenhum rosto
+                        self._is_encoding_captured = False
+
+                    time.sleep(0.02)
+                except Exception as e:
+                    # Captura exceções menores no meio do loop para que uma falha no processamento de um frame não derrube a detecção permanentemente
+                    print(f"[FaceDetector] Erro no processamento de frame: {e}")
+                    time.sleep(0.02)
+
+        except Exception as e:
+            # Captura erros graves na inicialização da captura ou fora do loop de processamento
+            print(f"[FaceDetector] Erro crítico na thread de detecção: {e}")
+        finally:
+            # Libera os recursos físicos e janelas da câmera somente se foram iniciados, sem afetar o fluxo de push de frames (injeção)
+            if self._video_capture is not None:
+                try:
+                    self._video_capture.release()
+                except Exception as ex:
+                    print(f"[FaceDetector] Erro ao liberar câmera: {ex}")
+                self._video_capture = None
+                
+                try:
+                    cv2.destroyAllWindows()
+                except Exception as ex:
+                    print(f"[FaceDetector] Erro ao fechar janelas do OpenCV: {ex}")
+            
+            # Garante que a flag seja desligada se a thread cair de forma inesperada, permitindo que possa ser reiniciada posteriormente
+            self._is_running = False
 
     def __process_frame(self, frame):
         """ Processa o frame reduzindo a resolução e convertendo o mapa de cores.
@@ -146,8 +170,8 @@ class FaceDetector:
             Frame processado.
         """
 
-        # Reduzindo o tamanho da imagem para 1/4 para processar mais rápido
-        resized_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
+        # Reduzindo o tamanho da imagem para 1/2 para processar mais rápido
+        resized_frame = cv2.resize(frame, (0, 0), fx=0.50, fy=0.50)
         
         # A biblioteca face_recognition trabalha com RGB. É necessário converter:
         resized_frame_rgb = cv2.cvtColor(resized_frame, cv2.COLOR_BGR2RGB)
