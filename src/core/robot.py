@@ -44,7 +44,7 @@ class Robot():
         """
         self._detector.push_frame(frame)
 
-    def send_ask(self, ask:str) -> str | None:
+    async def send_ask(self, ask:str) -> str | None:
         """ Envia uma mensagem para o agente de IA do robô e obtém a resposta.
 
         Envia o input do usuário para o chat contextual do agente, acionando
@@ -57,7 +57,7 @@ class Robot():
             str: A resposta textual gerada pelo robô.
             None: Caso ocorra alguma falha.
         """
-        return self._agent.send(ask)
+        return await self._agent.send(ask)
 
     def reset_interaction(self) -> bool:
         """ Reinicia a conversa atual limpando todo o histórico do chat juntamente ao encoding armazenado.

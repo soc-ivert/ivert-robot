@@ -104,7 +104,7 @@ class MessageHandler:
         print("[SERVER] Pergunta recebida:", ask)
         await self.change_state(RobotState.THINKING)
 
-        answer = await asyncio.to_thread(self._robot.send_ask, ask)
+        answer = await self._robot.send_ask(ask)
         await self._send(json.dumps({
             "type": "answer",
             "data": { "text": answer if answer is not None else "error"}

@@ -92,7 +92,7 @@ class Agent():
             ChatCreationError: Se falhar ao criar o chat.
         """
         try:
-            return self._client.chats.create(
+            return self._client.aio.chats.create(
                 model=MODEL,
                 config=types.GenerateContentConfig(
                     system_instruction=self._prompts,
@@ -115,7 +115,7 @@ class Agent():
         except ChatCreationError:
             return False
  
-    def send(self, user_input: str) -> str | None:
+    async def send(self, user_input: str) -> str | None:
         """ Envia uma mensagem do usuário para o agente.
 
         Também monitora o tamanho do histórico. Caso exceda o limite definido em `_MAX_MESSAGES`, 
@@ -134,7 +134,7 @@ class Agent():
             self._chat.history = self._chat.get_history()[-self._MAX_MESSAGES:]
 
         try:
-            response = self._chat.send_message(user_input)
+            response = await self._chat.send_message(user_input)
             return response.text
         except Exception as e:
             print("[AGENT] Erro:", e)
