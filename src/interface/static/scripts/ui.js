@@ -1,17 +1,17 @@
 'use strict';
 
-const scene      = document.querySelector('.scene');
-const face       = document.getElementById('face');
-const stateEl    = document.getElementById('bot-state');
+const scene = document.querySelector('.scene');
+const face = document.getElementById('face');
+const stateEl = document.getElementById('bot-state');
 const stateLabel = document.getElementById('state-label');
-const dot3       = document.getElementById('status-dot-3');
+const dot3 = document.getElementById('status-dot-3');
 
 const VALID_STATES = new Set(['sleeping', 'greeting', 'waiting', 'thinking', 'speaking']);
 
 const STATE_ICONS = {
   sleeping: '◌',
   greeting: '◈',
-  waiting:  '◎',
+  waiting: '◎',
   thinking: '◉',
   speaking: '▶',
 };
@@ -43,7 +43,7 @@ function updateStatusBar(state) {
  */
 function setState(state) {
   if (!VALID_STATES.has(state)) {
-    console.warn(`[Ivert UI] Estado desconhecido: "${state}"`);
+    console.warn(`[UI] Estado desconhecido: "${state}"`);
     return;
   }
   if (state === currentState) return;

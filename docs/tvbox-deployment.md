@@ -10,7 +10,7 @@ Será adotado `systemd` como mecanismo de inicialização automática e recupera
 
 - TV Box com Armbian instalado e com acesso SSH ou terminal local.
 - Configuração de rede (mDNS) já realizada conforme `docs/network-setup.md`
-> Este guia usa `/home/<usuario>/robot` como caminho de exemplo. Substitua `<usuario>` pelo nome do usuário real do sistema em cada comando.
+> Este guia usa `/home/<usuario>/lobbybot` como caminho de exemplo. Substitua `<usuario>` pelo nome do usuário real do sistema em cada comando.
 
 ### Variáveis de ambiente
 
@@ -75,8 +75,8 @@ Se o pacote `python3.11` não estiver disponível nos repositórios padrão do A
 ### 4. Copiar o projeto para o TV Box
 
 ```bash
-git clone https://github.com/codevinni/robot.git /home/<usuario>/robot
-cd /home/<usuario>/robot
+git clone https://github.com/codevinni/lobby-robot.git /home/<usuario>/lobbybot
+cd /home/<usuario>/lobbybot
 ```
 
 
@@ -115,7 +115,7 @@ Esse comando irá gerar `key.pem` e `cert.pem`.
 ### 9. Configurar o serviço systemd da aplicação
 
 ```bash
-sudo nano /etc/systemd/system/robot.service
+sudo nano /etc/systemd/system/lobbybot.service
 ```
 
 Conteúdo do arquivo:
@@ -128,8 +128,8 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=/home/<usuario>/robot
-ExecStart=/home/<usuario>/robot/venv/bin/python main.py
+WorkingDirectory=/home/<usuario>/lobbybot
+ExecStart=/home/<usuario>/lobbybot/venv/bin/python main.py
 Restart=on-failure
 RestartSec=5
 User=<usuario>
@@ -140,7 +140,7 @@ WantedBy=multi-user.target
 
 - `Description`: texto identificador exibido em `systemctl status` e nos logs.
 - `WorkingDirectory`: define a pasta de trabalho do processo. Fundamental para que caminhos relativos no código resolvam corretamente.
-- `ExecStart=/home/vinicius/robo-ivert/venv/bin/python main.py`: chama o Python de dentro do venv.
+- `ExecStart=/home/<usuario>/lobbybot/venv/bin/python main.py`: chama o Python de dentro do venv.
 - `Restart=on-failure`: reinicia o processo automaticamente se ele encerrar com erro.
 
 
@@ -152,22 +152,22 @@ sudo systemctl daemon-reload
 Recarrega as definições do systemd.
 
 ```bash
-sudo systemctl enable robo-ivert
+sudo systemctl enable lobbybot
 ```
 Habilita o início automático a cada boot.
 
 ```bash
-sudo systemctl start robo-ivert
+sudo systemctl start lobbybot
 ```
 Inicia o serviço agora, sem precisar reiniciar o TV Box para testar.
 
 ```bash
-sudo systemctl status robo-ivert
+sudo systemctl status lobbybot
 ```
 Veja se o estado é `active (running)`.
 
 ```bash
-journalctl -u robo-ivert -f
+journalctl -u lobbybot -f
 ```
 Acompanha os logs em tempo real.
 
@@ -182,7 +182,7 @@ Deve retornar uma resposta do servidor.
 
 **A partir do tablet:**
 ```
-https://tvbox.local:8484
+https://tvbox.local:8484?token=<TABLET_ACCESS_TOKEN>
 ```
 Deve carregar a interface.
 

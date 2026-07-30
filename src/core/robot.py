@@ -7,7 +7,7 @@ from src.core.enums import RobotState
 import asyncio
 
 class Robot():
-    """ Classe controladora que orquestra as operações do Robô IVERT.
+    """ Classe controladora que orquestra as operações do Robô.
 
     Esta classe atua como o ponto central do sistema, integrando o banco de 
     dados local, o detector facial e o agente de inteligência artificial.
