@@ -15,16 +15,10 @@ def create_app(robot: Robot) -> FastAPI:
     app.mount("/static", StaticFiles(directory="src/interface/static"), name="static")
     
     ACCESS_TOKEN = os.getenv("TABLET_ACCESS_TOKEN") # Token de acesso obrigatório
-    if not ACCESS_TOKEN:
-        raise RuntimeError(
-            "TABLET_ACCESS_TOKEN não configurado. Defina essa variável de ambiente antes de iniciar o servidor."
-        )
-
-    # HASH do token para armazenar no cookie
-    SESSION_VALUE = hashlib.sha256(ACCESS_TOKEN.encode("utf-8")).hexdigest()
-    
+    SESSION_VALUE = hashlib.sha256(ACCESS_TOKEN.encode("utf-8")).hexdigest() # HASH do token para armazenar no cookie
     MAX_FAILED_ATTEMPTS = 5
     LOCKOUT_SECONDS = 600  # 10 minutos bloqueado após exceder o limite
+    
     _failed_attempts: dict[str, list[float]] = {}
 
     def _is_locked_out(client_ip: str) -> bool:

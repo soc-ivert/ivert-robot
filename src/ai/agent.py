@@ -29,10 +29,7 @@ class Agent():
         """
 
         try:
-            api_key = os.getenv("GEMINI_API_KEY")
-            if not api_key:
-                raise AgentError("Variável de ambiente GEMINI_API_KEY não configurada no env")
-            self._client = genai.Client(api_key=api_key)
+            self._client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
             self._tools = tools
             self._prompts = self._load_prompts()
             self._chat = self._create_chat()

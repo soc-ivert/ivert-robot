@@ -12,6 +12,31 @@ Será adotado `systemd` como mecanismo de inicialização automática e recupera
 - Configuração de rede (mDNS) já realizada conforme `docs/network-setup.md`
 > Este guia usa `/home/<usuario>/robot` como caminho de exemplo. Substitua `<usuario>` pelo nome do usuário real do sistema em cada comando.
 
+### Variáveis de ambiente
+
+Crie o arquivo `.env` na raiz do projeto com o seguinte conteúdo, substituindo os valores de exemplo:
+
+```dotenv
+# Servidor
+HOST=0.0.0.0
+PORT=8484
+
+# Autenticação
+TABLET_ACCESS_TOKEN=<gere-um-token-seguro-aleatorio>
+
+# IA - Gemini
+GEMINI_API_KEY=<sua-chave-de-api-do-gemini>
+```
+
+| Variável | Descrição |
+|---|---|
+| `HOST` | Interface de rede onde o servidor escuta. |
+| `PORT` | Porta do servidor HTTPS. |
+| `TABLET_ACCESS_TOKEN` | Token de autenticação exigido nas requisições/WebSocket do tablet. |
+| `GEMINI_API_KEY` | Chave de API do Gemini usada pelo Agent. |
+
+> **Nota:** existe suporte planejado para migrar para o Google Cloud (Vertex AI) via `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION` e `GOOGLE_GENAI_USE_ENTERPRISE`, pendente de configuração de faturamento no GCP. Essas variáveis substituirão `GEMINI_API_KEY` quando ativadas, veja `.env.example`.
+
 ## Passo a passo
 
 ### 1. Atualizar o sistema
