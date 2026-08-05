@@ -130,6 +130,7 @@ Wants=network-online.target
 Type=simple
 WorkingDirectory=/home/<usuario>/lobbybot
 ExecStart=/home/<usuario>/lobbybot/venv/bin/python main.py
+Environment=PYTHONUNBUFFERED=1
 Restart=on-failure
 RestartSec=5
 User=<usuario>
