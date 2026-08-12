@@ -103,6 +103,7 @@ def create_app(robot: Robot) -> FastAPI:
             return
 
         await ws.accept()
+        print(f"[SERVER] Conexão WebSocket aceita. Origem : {origin}")
         handler = MessageHandler(robot, ws.send_text)
         
         await handler.send_initial_state()

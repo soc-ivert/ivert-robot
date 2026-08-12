@@ -3,34 +3,9 @@
 import { send } from './websocket.js';
 
 const speakStatus = document.getElementById('speak-status');
-const voicesStatus = document.getElementById('voices-status');
-const synthStatus = document.getElementById('synth-status');
 
 let isSpeaking = false;
 let activeUtterance = null; // Mantém a referência da utterance global 
-
-// Debug: atualizar status do synth a cada 500ms
-setInterval(() => {
-    if (synthStatus) {
-        synthStatus.textContent = `spk:${speechSynthesis.speaking} pnd:${speechSynthesis.pending} psd:${speechSynthesis.paused}`;
-    }
-}, 1000);
-
-function loadVoices() {
-
-    const voices = speechSynthesis.getVoices();
-
-    if (voicesStatus) {
-        if (voices.length > 0) {
-            voicesStatus.textContent = `${voices.length} vozes (pt-BR: ${voices.filter(v => v.lang.includes('pt')).length})`;
-        } else {
-            voicesStatus.textContent = 'nenhuma voz encontrada';
-        }
-    }
-}
-
-speechSynthesis.onvoiceschanged = loadVoices;
-loadVoices();
 
 const SpeechAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
 

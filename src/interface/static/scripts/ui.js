@@ -42,6 +42,9 @@ function updateStatusBar(state) {
  * Chamado pelo WebSocket handler em main.js.
  */
 function setState(state) {
+
+  if (!state) return;
+  
   if (!VALID_STATES.has(state)) {
     console.warn(`[UI] Estado desconhecido: "${state}"`);
     return;
@@ -53,7 +56,8 @@ function setState(state) {
   scene.classList.add(`state-${state}`);
   currentState = state;
   updateDebug(state);
-  updateStatusBar(state);
+  updateStatusBar(state); 
+
 }
 
 setState('sleeping');
