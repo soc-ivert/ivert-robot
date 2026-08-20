@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erro ao Iniciar o Robô</title>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #e9f7ff;
+            color: #002b43;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .icon-container {
+            margin-bottom: 12px;
+        }
+
+        .error-icon {
+            width: 54px;
+            height: 54px;
+            fill: #002b43;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #002b43;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        p.subtitle {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #002b43;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+
+        .cards-container {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background-color: #38b6ff;
+            color: #ffffff;
+            border-radius: 10px;
+            padding: 12px 18px;
+            margin-bottom: 10px;
+            text-align: left;
+            box-shadow: 0 3px 8px rgba(0, 43, 67, 0.1);
+            display: flex;
+            align-items: center;
+        }
+
+        .card:last-child {
+            margin-bottom: 0;
+        }
+
+        .card-number {
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: #ffffff;
+            margin-right: 12px;
+            min-width: 20px;
+        }
+
+        .card-text {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.25;
+        }
+
+        .footer-note {
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: #002b43;
+            background-color: rgba(56, 182, 255, 0.15);
+            border: 2px dashed #002b43;
+            border-radius: 8px;
+            padding: 10px 16px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="icon-container">
+            <svg class="error-icon" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+        </div>
+
+        <h1>Atenção</h1>
+
+        <p class="subtitle">Ocorreu um erro ao iniciar o robô.<br>Verifique:</p>
+
+        <div class="cards-container">
+            <div class="card">
+                <span class="card-number">1.</span>
+                <span class="card-text">Se o TV Box está ligado.</span>
+            </div>
+
+            <div class="card">
+                <span class="card-number">2.</span>
+                <span class="card-text">Se o roteador está ligado.</span>
+            </div>
+
+            <div class="card">
+                <span class="card-number">3.</span>
+                <span class="card-text">Se o TV Box e o tablet estão conectados à mesma rede.</span>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            Em caso de dúvidas, procure a equipe.
+        </div>
+    </div>
+
+</body>
+</html>
