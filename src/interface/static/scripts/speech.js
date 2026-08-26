@@ -73,7 +73,7 @@ function speak(text) {
     fully.textToSpeech(text);
 
     // Estima a duração da fala com base no tamanho do texto, já que a API do Fully não expõe evento de término
-    const CARACTERES_POR_SEGUNDO = 15; 
+    const CARACTERES_POR_SEGUNDO = 15;
     const MARGEM_SEGURANCA_MS = 400;   // evita cortar a fala um pouco antes do fim
     const duracaoEstimadaMs = (text.length / CARACTERES_POR_SEGUNDO) * 1000 + MARGEM_SEGURANCA_MS;
 
@@ -124,5 +124,12 @@ function speak(text) {
 }
 */
 
+// Usada para "acordar" o TTS da WebView, evitando delays de inicialização.
+function ttsWarmup() {
 
-export { speak, startListening };
+    if (typeof fully !== 'undefined' && typeof fully.textToSpeech === 'function')
+        fully.textToSpeech(" ");
+
+}
+
+export { speak, startListening, ttsWarmup };
