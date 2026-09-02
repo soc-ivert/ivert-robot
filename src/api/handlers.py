@@ -9,6 +9,7 @@ from src.core.robot import Robot
 from src.core.enums import RobotState
 
 IDLE_TIMEOUT = 30
+BUSY_TIMEOUT = 60
 
 class MessageHandler:
     """ Coordena o fluxo de interação do robô.
@@ -129,8 +130,10 @@ class MessageHandler:
     async def change_state(self, state: RobotState):
         """ Altera o estado do robô e notifica o tablet.
 
-        Gerencia o timer de inatividade conforme o novo estado: reinicia em GREETING e WAITING, 
-        cancela em SLEEPING. Ao dormir, reinicia a interação limpando histórico e encoding.
+        Gerencia o timer de inatividade conforme o novo estado:
+        - GREETING / WAITING: reinicia o timer com IDLE_TIMEOUT (30s) para SLEEPING.
+        - THINKING / SPEAKING: reinicia o timer com BUSY_TIMEOUT (60s) para SLEEPING.
+        - SLEEPING: cancela o timer e reinicia a interação (limpando histórico e encoding).
 
         Args:
             state: Novo estado a ser aplicado.
@@ -148,12 +151,12 @@ class MessageHandler:
         }))
 
         if state in [RobotState.GREETING, RobotState.WAITING]:
-            self._reset_sleep_timer()
+            self._reset_sleep_timer(IDLE_TIMEOUT)
+        elif state in [RobotState.THINKING, RobotState.SPEAKING]:
+            self._reset_sleep_timer(BUSY_TIMEOUT)
         elif state == RobotState.SLEEPING:
             self._cancel_sleep_timer()
             self._robot.reset_interaction()
-        elif state in [RobotState.SPEAKING, RobotState.THINKING]:
-            self._cancel_sleep_timer()
 
 
     async def on_face_detected(self):
@@ -166,11 +169,14 @@ class MessageHandler:
             await self.change_state(RobotState.GREETING)
 
 
-    def _reset_sleep_timer(self) -> None:
-        """ Cancela o timer atual e inicia um novo.
+    def _reset_sleep_timer(self, timeout: int = IDLE_TIMEOUT) -> None:
+        """ Cancela o timer atual e inicia um novo com a duração especificada.
+
+        Args:
+            timeout: Duração em segundos antes de transicionar para SLEEPING.
         """
         self._cancel_sleep_timer()
-        self._sleep_task = asyncio.create_task(self._sleep_timeout())
+        self._sleep_task = asyncio.create_task(self._sleep_timeout(timeout))
 
 
     def _cancel_sleep_timer(self) -> None:
@@ -181,10 +187,17 @@ class MessageHandler:
             self._sleep_task = None
 
 
-    async def _sleep_timeout(self) -> None:
-        """ Aguarda o tempo de inatividade e transiciona para SLEEPING.
+    async def _sleep_timeout(self, timeout: int) -> None:
+        """ Aguarda o tempo configurado e transiciona o robô para SLEEPING.
         
-        Cancelada automaticamente ao resetar o timer.
+        Cancelada automaticamente ao mudar de estado ou resetar o timer.
+
+        Args:
+            timeout: Duração em segundos da espera.
         """
-        await asyncio.sleep(IDLE_TIMEOUT)
-        await self.change_state(RobotState.SLEEPING)
+        try:
+            await asyncio.sleep(timeout)
+            print(f"[HANDLER] Timeout atingido ({timeout}s). Indo para SLEEPING.")
+            await self.change_state(RobotState.SLEEPING)
+        except asyncio.CancelledError:
+            pass
