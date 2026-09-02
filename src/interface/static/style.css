@@ -219,14 +219,18 @@ html, body {
   transition: opacity 0.5s ease-in-out;
 }
 
-.zzz {
+.zzz-node {
+  transform-origin: 0 0;
+  opacity: 0;
+}
+
+.zzz-text {
   font-family: 'Fredoka', 'Nunito', 'Segoe UI', system-ui, sans-serif;
   font-weight: 700;
-  font-size: 42px;
+  font-size: 50px;
   fill: var(--accent);
   text-anchor: middle;
   dominant-baseline: central;
-  opacity: 0; /* hidden by default, animation controls visibility */
 }
 
 /* Thought Bubble */
@@ -268,68 +272,66 @@ html, body {
   opacity: 1;
 }
 
-/* Each Z floats left→right in a zigzag (up/down alternating),
-   growing in scale and opacity. Staggered by 25% of the cycle. */
-.state-sleeping .zzz-float {
-  animation: zzzFloat 6s ease-in-out infinite;
+/* 4 Z elements spaced by 25% of the cycle.
+   As they advance linearly towards the horizon, their vertical movement alternates:
+   one moves UP while the other moves DOWN.
+*/
+.state-sleeping .zzz-node {
+  animation: zzzFlow 6.8s ease-in-out infinite;
 }
 
-.state-sleeping .zzz-r1 { animation-delay: 0s; }
-.state-sleeping .zzz-r2 { animation-delay: -1.5s; }
-.state-sleeping .zzz-r3 { animation-delay: -3s; }
-.state-sleeping .zzz-r4 { animation-delay: -4.5s; }
+.state-sleeping .zzz-n1 { animation-delay: 0s; }
+.state-sleeping .zzz-n2 { animation-delay: -1.7s; }
+.state-sleeping .zzz-n3 { animation-delay: -3.4s; }
+.state-sleeping .zzz-n4 { animation-delay: -5.1s; }
 
-/* Zigzag float path from front-left to horizon-right.
-   Offsets relative to base position (x=820, y=650).
-   The path alternates vertically while advancing horizontally.
-   Scale grows from 0.55 (small z) to 1.5 (big Z).
-   Opacity rises from 0.3 to 1.0, then fades to 0 at the end.
-
-   Waypoints (translate-x, translate-y):
-     Start:  (0, 0)       — bottom-left, small, faded
-     W1:     (+55, -55)    — up (zigzag crest)
-     W2:     (+110, -5)    — down (zigzag trough)
-     W3:     (+170, -60)   — up (zigzag crest)
-     End:    (+210, -35)   — fade out at horizon
+/* Life curve:
+   - Starts small (scale 0.52) and faint (opacity 0 -> 0.35) at front-left
+   - Expands gradually (scale -> 1.42) and brightens (opacity -> 1.0) towards horizon
+   - Vertical motion alternates:
+       Phase 1 (6% - 25%): moves UP towards Crest 1 (y: 638 -> 598)
+       Phase 2 (25% - 48%): moves DOWN towards Trough (y: 598 -> 618)
+       Phase 3 (48% - 72%): moves UP towards Crest 2 (y: 618 -> 562, top-center)
+       Phase 4 (72% - 90%): moves DOWN towards Horizon (y: 562 -> 605)
+   - Reaches horizon, fades out completely to opacity 0, resets to start
 */
-@keyframes zzzFloat {
+@keyframes zzzFlow {
   0% {
-    transform: translate(0px, 0px) scale(0.55);
+    transform: translate(835px, 642px) scale(0.52);
     opacity: 0;
   }
-  /* Fade in at starting position */
   6% {
-    transform: translate(8px, -3px) scale(0.58);
+    transform: translate(848px, 638px) scale(0.58);
     opacity: 0.35;
   }
-  /* First crest — moving up */
+  /* Waypoint 1 (Crest 1) — moved UP */
   25% {
-    transform: translate(55px, -55px) scale(0.78);
-    opacity: 0.55;
+    transform: translate(898px, 598px) scale(0.80);
+    opacity: 0.62;
   }
-  /* First trough — moving down */
-  45% {
-    transform: translate(110px, -5px) scale(1.0);
-    opacity: 0.75;
+  /* Waypoint 2 (Trough) — moved DOWN */
+  48% {
+    transform: translate(948px, 618px) scale(1.00);
+    opacity: 0.80;
   }
-  /* Second crest — moving up */
-  65% {
-    transform: translate(170px, -60px) scale(1.25);
+  /* Waypoint 3 (Crest 2 - top center) — moved UP */
+  72% {
+    transform: translate(992px, 562px) scale(1.22);
     opacity: 0.95;
   }
-  /* Approaching horizon — peak brightness */
-  80% {
-    transform: translate(205px, -35px) scale(1.45);
+  /* Waypoint 4 (Approaching Horizon) — moved DOWN */
+  90% {
+    transform: translate(1034px, 604px) scale(1.38);
     opacity: 1.0;
   }
-  /* Fade out at horizon */
-  92% {
-    transform: translate(220px, -30px) scale(1.5);
+  /* Fade out at horizon limit */
+  96% {
+    transform: translate(1050px, 610px) scale(1.42);
     opacity: 0;
   }
-  /* Reset to start position (invisible) */
+  /* Instant reset to front position */
   100% {
-    transform: translate(0px, 0px) scale(0.55);
+    transform: translate(835px, 642px) scale(0.52);
     opacity: 0;
   }
 }
@@ -562,7 +564,7 @@ html, body {
   transition: opacity 0.12s ease-out !important;
 }
 
-.trans-sleep-greet-step1 .zzz-float {
+.trans-sleep-greet-step1 .zzz-node {
   animation: none !important;
   opacity: 0 !important;
 }
@@ -572,7 +574,7 @@ html, body {
   opacity: 0 !important;
 }
 
-.trans-sleep-greet-step2 .zzz-float {
+.trans-sleep-greet-step2 .zzz-node {
   animation: none !important;
   opacity: 0 !important;
 }
