@@ -16,7 +16,7 @@
 <body>
 
   <!-- ── Debug Panel (Redesigned with project theme, toggleable) ── -->
-  <div id="debug">
+  <div id="debug" style="display: none;">
     <div class="debug-header">
       <span class="debug-tag">SYS</span>
       <span class="debug-title">LOBBYBOT // MONITOR</span>
@@ -45,6 +45,10 @@
 
   <!-- ── Main Stage / Scene ── -->
   <main class="stage state-sleeping" id="stage">
+    <!-- Brand Logos -->
+    <img class="brand-logo-top" src="./static/images/logo.png" alt="Logo IVERT" />
+    <img class="brand-logo-bottom" src="./static/images/ivert-text.png" alt="IVERT" />
+
     <div class="robot-canvas-wrap">
 
       <!-- SVG Robot Vector Character -->
@@ -60,43 +64,43 @@
         <!-- 1. Antenna stalk & sphere -->
         <g id="antenna-group">
           <!-- Collar Base -->
-          <path d="M 879 365 L 887 330 L 952 330 L 953 366 Z" fill="#d5e9f2" />
-          <path d="M 952 330 L 977 328 L 977 365 L 953 366 Z" fill="#a8d7e9" />
+          <path d="M 879 365 L 887 330 L 952 330 L 953 366 Z" fill="#dce0db" />
+          <path d="M 952 330 L 977 328 L 977 365 L 953 366 Z" fill="#c3d3cc" />
           <!-- Neck Stem -->
-          <path d="M 921 330 C 923 270 933 240 933 230 L 960 229 C 960 240 951 270 951 330 Z" fill="#d5e9f2" />
+          <path d="M 921 330 C 923 270 933 240 933 230 L 960 229 C 960 240 951 270 951 330 Z" fill="#dce0db" />
           <!-- Sphere Shadow & Body -->
-          <circle cx="946.5" cy="203.5" r="24" fill="#a8d7e9" />
+          <circle cx="946.5" cy="203.5" r="24" fill="#c3d3cc" />
           <path
             d="M 946.5 179.5 A 24 24 0 0 0 922.5 203.5 A 24 24 0 0 0 946.5 227.5 A 24 24 0 0 0 954 226.3 C 938 215 938 190 954 180.7 A 24 24 0 0 0 946.5 179.5 Z"
-            fill="#d5e9f2" />
+            fill="#dce0db" />
           <!-- Sphere Glossy Highlight -->
           <circle cx="939" cy="197" r="6.5" fill="#ffffff" />
         </g>
 
-        <!-- 2. Helmet Base Pedestal & Side Shadows (#a8d7e9) -->
+        <!-- 2. Helmet Base Pedestal & Side Shadows (#c3d3cc) -->
         <path id="helmet-base-shadow"
           d="M 611 718 L 680 806 L 1222 806 L 1291 717 C 1291 717 1278 611 1240 504 L 1206 540 C 1230 688 1205 719 1205 719 L 611 718 Z"
-          fill="#a8d7e9" />
+          fill="#c3d3cc" />
 
-        <!-- 3. Helmet Upper Dome (#d5e9f2) -->
+        <!-- 3. Helmet Upper Dome (#dce0db) -->
         <path id="helmet-dome"
           d="M 611 718 C 625 570 670 470 746 410 C 800 375 870 364 953 366 C 1036 364 1106 375 1160 410 C 1236 470 1281 570 1291 717 L 1205 719 C 1205 719 1225 670 1200 696 L 701 696 C 685 670 611 718 611 718 Z"
-          fill="#d5e9f2" />
+          fill="#dce0db" />
 
         <!-- 4. Helmet Top-Left Glossy Highlight (#ffffff) -->
         <path id="helmet-highlight"
           d="M 844 406 C 810 395 750 415 706 484 C 702 494 712 502 724 496 C 765 450 805 425 843 415 C 848 412 848 407 844 406 Z"
           fill="#ffffff" />
 
-        <!-- 5. Dark Screen / Visor Cutout (#002b43) -->
+        <!-- 5. Dark Screen / Visor Cutout (#3c504b) -->
         <path id="visor-bg"
           d="M 701 696 L 1201 696 C 1201 696 1201 580 1161 536 C 1114 478 1035 452 951 452 C 867 452 788 478 741 536 C 701 580 701 696 701 696 Z"
-          fill="#002b43" />
+          fill="#3c504b" />
 
-        <!-- 6. Visor Inner Top Shadow (#000f16) -->
+        <!-- 6. Visor Inner Top Shadow (#262b27) -->
         <path id="visor-shadow"
           d="M 701 696 C 701 580 741 536 788 478 C 835 452 951 452 951 452 C 951 452 1067 452 1114 478 C 1161 536 1201 580 1201 696 C 1201 580 1140 500 1048 498 C 955 488 874 494 798 517 C 735 580 701 696 701 696 Z"
-          fill="#000f16" />
+          fill="#262b27" />
 
         <!-- 7. Visor Screen Elements (Clipped inside screen) -->
         <g clip-path="url(#visor-clip)">
@@ -104,32 +108,36 @@
           <!-- 7a. Normal / Waiting / Speaking / Thinking Eyes -->
           <g id="eyes-group" class="eyes-container">
             <rect id="eye-left" class="robot-eye eye-left" x="815" y="558" width="60" height="85" rx="30" ry="30"
-              fill="#38b6ff" />
+              fill="#00ab4f" />
             <rect id="eye-right" class="robot-eye eye-right" x="1019" y="558" width="60" height="85" rx="30" ry="30"
-              fill="#38b6ff" />
+              fill="#00ab4f" />
           </g>
 
           <!-- 7b. Greeting Happy Eye Arcs -->
           <g id="greeting-eyes" class="greeting-eyes-container">
-            <path class="greeting-arc arc-left" d="M 791 588 C 791 556 896 556 896 588" fill="none" stroke="#38b6ff"
+            <path class="greeting-arc arc-left" d="M 791 588 C 791 556 896 556 896 588" fill="none" stroke="#00ab4f"
               stroke-width="14" stroke-linecap="round" />
-            <path class="greeting-arc arc-right" d="M 995 588 C 995 556 1100 556 1100 588" fill="none" stroke="#38b6ff"
+            <path class="greeting-arc arc-right" d="M 995 588 C 995 556 1100 556 1100 588" fill="none" stroke="#00ab4f"
               stroke-width="14" stroke-linecap="round" />
           </g>
 
           <!-- 7c. Sleeping ZZZ (alternating flow towards horizon) -->
           <g id="sleeping-zzz" class="sleeping-zzz-container">
             <g class="zzz-node zzz-n1">
-              <text class="zzz-text" x="0" y="0" text-anchor="middle" dominant-baseline="central" fill="#38b6ff">Z</text>
+              <text class="zzz-text" x="0" y="0" text-anchor="middle" dominant-baseline="central"
+                fill="#00ab4f">Z</text>
             </g>
             <g class="zzz-node zzz-n2">
-              <text class="zzz-text" x="0" y="0" text-anchor="middle" dominant-baseline="central" fill="#38b6ff">Z</text>
+              <text class="zzz-text" x="0" y="0" text-anchor="middle" dominant-baseline="central"
+                fill="#00ab4f">Z</text>
             </g>
             <g class="zzz-node zzz-n3">
-              <text class="zzz-text" x="0" y="0" text-anchor="middle" dominant-baseline="central" fill="#38b6ff">Z</text>
+              <text class="zzz-text" x="0" y="0" text-anchor="middle" dominant-baseline="central"
+                fill="#00ab4f">Z</text>
             </g>
             <g class="zzz-node zzz-n4">
-              <text class="zzz-text" x="0" y="0" text-anchor="middle" dominant-baseline="central" fill="#38b6ff">Z</text>
+              <text class="zzz-text" x="0" y="0" text-anchor="middle" dominant-baseline="central"
+                fill="#00ab4f">Z</text>
             </g>
           </g>
 
@@ -137,25 +145,25 @@
 
         <!-- 8. Flower Accessory (Right Shoulder) -->
         <g id="flower-accessory">
-          <!-- 6 Petals in #38b6ff -->
-          <circle cx="1218" cy="463" r="33" fill="#38b6ff" />
-          <circle cx="1196.5" cy="500.2" r="33" fill="#38b6ff" />
-          <circle cx="1153.5" cy="500.2" r="33" fill="#38b6ff" />
-          <circle cx="1132" cy="463" r="33" fill="#38b6ff" />
-          <circle cx="1153.5" cy="425.8" r="33" fill="#38b6ff" />
-          <circle cx="1196.5" cy="425.8" r="33" fill="#38b6ff" />
-          <!-- Center in #004aad -->
-          <circle cx="1175" cy="463" r="26" fill="#004aad" />
+          <!-- 6 Petals in #00ab4f -->
+          <circle cx="1218" cy="463" r="33" fill="#00ab4f" />
+          <circle cx="1196.5" cy="500.2" r="33" fill="#00ab4f" />
+          <circle cx="1153.5" cy="500.2" r="33" fill="#00ab4f" />
+          <circle cx="1132" cy="463" r="33" fill="#00ab4f" />
+          <circle cx="1153.5" cy="425.8" r="33" fill="#00ab4f" />
+          <circle cx="1196.5" cy="425.8" r="33" fill="#00ab4f" />
+          <!-- Center in #1e621d -->
+          <circle cx="1175" cy="463" r="26" fill="#1e621d" />
         </g>
 
         <!-- 9. Thought Bubble (Thinking State) -->
         <g id="thought-bubble" class="thought-bubble-container">
           <!-- Connection trail dots -->
-          <circle class="bubble-dot dot-3" cx="708" cy="409" r="7" fill="#38b6ff" />
-          <circle class="bubble-dot dot-2" cx="691" cy="391.5" r="9.5" fill="#38b6ff" />
-          <circle class="bubble-dot dot-1" cx="668.5" cy="369.5" r="12.5" fill="#38b6ff" />
+          <circle class="bubble-dot dot-3" cx="708" cy="409" r="7" fill="#00ab4f" />
+          <circle class="bubble-dot dot-2" cx="691" cy="391.5" r="9.5" fill="#00ab4f" />
+          <circle class="bubble-dot dot-1" cx="668.5" cy="369.5" r="12.5" fill="#00ab4f" />
           <!-- Main Bubble Body -->
-          <rect class="bubble-body" x="474" y="263" width="186" height="98" rx="24" fill="#38b6ff" />
+          <rect class="bubble-body" x="474" y="263" width="186" height="98" rx="24" fill="#00ab4f" />
           <!-- 3 Animated White Dots Inside -->
           <circle class="inner-dot idot-1" cx="527" cy="312" r="6.5" fill="#ffffff" />
           <circle class="inner-dot idot-2" cx="567" cy="312" r="6.5" fill="#ffffff" />
@@ -164,14 +172,14 @@
 
         <!-- 10. Speaking Audio Bars (Speaking State - 8 thick bars) -->
         <g id="speaking-bars" class="speaking-bars-container">
-          <rect class="audio-bar bar-1" x="845" y="880" width="24" height="100" rx="12" fill="#38b6ff" />
-          <rect class="audio-bar bar-2" x="881" y="860" width="24" height="140" rx="12" fill="#38b6ff" />
-          <rect class="audio-bar bar-3" x="917" y="870" width="24" height="120" rx="12" fill="#38b6ff" />
-          <rect class="audio-bar bar-4" x="953" y="890" width="24" height="80" rx="12" fill="#38b6ff" />
-          <rect class="audio-bar bar-5" x="989" y="890" width="24" height="80" rx="12" fill="#38b6ff" />
-          <rect class="audio-bar bar-6" x="1025" y="870" width="24" height="120" rx="12" fill="#38b6ff" />
-          <rect class="audio-bar bar-7" x="1061" y="860" width="24" height="140" rx="12" fill="#38b6ff" />
-          <rect class="audio-bar bar-8" x="1097" y="880" width="24" height="100" rx="12" fill="#38b6ff" />
+          <rect class="audio-bar bar-1" x="845" y="880" width="24" height="100" rx="12" fill="#00ab4f" />
+          <rect class="audio-bar bar-2" x="881" y="860" width="24" height="140" rx="12" fill="#00ab4f" />
+          <rect class="audio-bar bar-3" x="917" y="870" width="24" height="120" rx="12" fill="#00ab4f" />
+          <rect class="audio-bar bar-4" x="953" y="890" width="24" height="80" rx="12" fill="#00ab4f" />
+          <rect class="audio-bar bar-5" x="989" y="890" width="24" height="80" rx="12" fill="#00ab4f" />
+          <rect class="audio-bar bar-6" x="1025" y="870" width="24" height="120" rx="12" fill="#00ab4f" />
+          <rect class="audio-bar bar-7" x="1061" y="860" width="24" height="140" rx="12" fill="#00ab4f" />
+          <rect class="audio-bar bar-8" x="1097" y="880" width="24" height="100" rx="12" fill="#00ab4f" />
         </g>
 
       </svg>

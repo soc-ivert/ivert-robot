@@ -1,11 +1,11 @@
 :root {
-  --bg:              #e9f7ff;
-  --robot-body:      #d5e9f2;
-  --robot-shadow:    #a8d7e9;
-  --visor-bg:        #002b43;
-  --visor-shadow:    #000f16;
-  --accent:          #38b6ff;
-  --flower-center:   #004aad;
+  --bg:              #e0ffdd;
+  --robot-body:      #dce0db;
+  --robot-shadow:    #c3d3cc;
+  --visor-bg:        #3c504b;
+  --visor-shadow:    #262b27;
+  --accent:          #00ab4f;
+  --flower-center:   #1e621d;
   --white:           #ffffff;
   
   --transition-fast: 220ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -34,7 +34,7 @@ html, body {
 }
 
 /* ════════════════════════════════════════════════════
-   DEBUG MONITOR PANEL (Styled to match new project theme)
+   DEBUG MONITOR PANEL (Styled with accent colors)
    Set display: none for production or toggle as needed
 ════════════════════════════════════════════════════ */
 #debug {
@@ -42,14 +42,14 @@ html, body {
   top: 18px;
   left: 18px;
   z-index: 999;
-  background: rgba(0, 43, 67, 0.88);
-  border: 1.5px solid rgba(56, 182, 255, 0.35);
+  background: rgba(38, 43, 39, 0.88);
+  border: 1.5px solid rgba(0, 171, 79, 0.4);
   border-radius: 16px;
   padding: 12px 18px;
   min-width: 230px;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 8px 32px rgba(0, 43, 67, 0.22);
+  box-shadow: 0 8px 32px rgba(38, 43, 39, 0.25);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -62,14 +62,14 @@ html, body {
   gap: 8px;
   margin-bottom: 6px;
   padding-bottom: 6px;
-  border-bottom: 1px solid rgba(56, 182, 255, 0.2);
+  border-bottom: 1px solid rgba(0, 171, 79, 0.25);
 }
 
 .debug-tag {
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.12em;
-  color: #002b43;
+  color: #ffffff;
   background: var(--accent);
   padding: 2px 7px;
   border-radius: 999px;
@@ -79,7 +79,7 @@ html, body {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.1em;
-  color: #a8d7e9;
+  color: #dce0db;
   text-transform: uppercase;
 }
 
@@ -95,7 +95,7 @@ html, body {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
-  color: #a8d7e9;
+  color: #c3d3cc;
   text-transform: uppercase;
 }
 
@@ -160,7 +160,7 @@ html, body {
   align-items: center;
   justify-content: center;
   padding: 0 4%;
-  box-shadow: 0 10px 30px rgba(56, 182, 255, 0.35);
+  box-shadow: 0 10px 30px rgba(0, 171, 79, 0.35);
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--transition-norm), transform var(--transition-bouncy);
@@ -180,6 +180,31 @@ html, body {
 .greeting-char {
   display: inline-block;
   transform-origin: center bottom;
+}
+
+/* ════════════════════════════════════════════════════
+   BRAND LOGOS (Top-left circular logo & Bottom-right IVERT)
+════════════════════════════════════════════════════ */
+.brand-logo-top {
+  position: absolute;
+  top: 2.8vw;
+  left: 2.8vw;
+  width: clamp(52px, 8.5vw, 130px);
+  height: auto;
+  user-select: none;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.brand-logo-bottom {
+  position: absolute;
+  bottom: 3vw;
+  right: 3.2vw;
+  width: clamp(65px, 9vw, 150px);
+  height: auto;
+  user-select: none;
+  pointer-events: none;
+  z-index: 20;
 }
 
 /* ════════════════════════════════════════════════════
