@@ -1,6 +1,13 @@
 from src.storage.database import Database, User
 from src.vision.face_detector import FaceDetector
-import random
+import csv
+import io
+import json
+import time
+from pathlib import Path
+import requests
+
+CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQwcJ1NL-CRep3M2o4-qEjkzmpZJ12XwQUo4tXf7GBcdYh_iTCrEUCvMWWn63XeNGbm7EN309dxkz22/pub?gid=0&single=true&output=csv"
 
 def create_tools(db: Database, face_detector: FaceDetector):
 
@@ -62,5 +69,43 @@ def create_tools(db: Database, face_detector: FaceDetector):
             print(f"[TOOLS] Erro em signup: {e}")
             return False
 
+
+    def get_eventos() -> list[dict]:
+        """ Obtém a lista de eventos ativos do instituto.
+
+        Returns:
+            list[dict]: Lista de eventos, cada um como um dicionário com as colunas da planilha. 
+            Retorna uma Lista vazia se nenhum evento estiver disponível.
+        """
+        cache_path = Path("data/events.json")
+        ttl_seconds = 24 * 60 * 60
+
+        cache = None
+        if cache_path.exists():
+            try:
+                with cache_path.open("r", encoding="utf-8") as f:
+                    cache = json.load(f)
+            except (json.JSONDecodeError, OSError) as e:
+                cache = None
+
+        if cache and (time.time() - cache["timestamp"]) < ttl_seconds:
+            print("[TOOLS] get_eventos retornando do cache")
+            return cache["eventos"]
+
+        try:
+            response = requests.get(CSV_URL, timeout=8)
+            response.raise_for_status()
+            reader = csv.DictReader(io.StringIO(response.text))
+            eventos = [dict(row) for row in reader]
+        except Exception as e:
+            print(f"[TOOLS] Falha ao buscar eventos, usando cache existente: {e}")
+            return cache["eventos"] if cache else []
+
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        with cache_path.open("w", encoding="utf-8") as f:
+            json.dump({"eventos": eventos, "timestamp": time.time()}, f, ensure_ascii=False, indent=2)
+
+        print(f"[TOOLS] get_eventos retornando {len(eventos)} eventos da planilha")
+        return eventos
             
-    return [signup, check_face]
+    return [signup, check_face, get_eventos]
