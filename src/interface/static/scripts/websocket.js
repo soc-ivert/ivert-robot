@@ -1,6 +1,6 @@
 'use strict';
 
-import { startCamera } from './camera.js';
+import { startCamera, stopCamera } from './camera.js';
 import { speak } from './speech.js';
 import { setState } from './ui.js';
 
@@ -28,6 +28,7 @@ function connect() {
 
     ws.onclose = () => {
         status.textContent = `Conexão fechada. Reconectando em ${retryDelay / 1000}s...`;
+        stopCamera();
         scheduleReconnect(); // Dispara agendamento de nova tentativa de reconexão
     };
 
@@ -36,15 +37,18 @@ function connect() {
     };
 
     ws.onmessage = (event) => {
+        try {
+            const { type, data } = JSON.parse(event.data);
 
-        const { type, data } = JSON.parse(event.data);
+            const handlers = {
+                answer: () => speak(data?.text),
+                state: () => setState(data?.value),
+            };
 
-        const handlers = {
-            answer: () => speak(data.text),
-            state: () => setState(data.value),
-        };
-
-        handlers[type]?.();
+            handlers[type]?.();
+        } catch (err) {
+            console.error('[WS] Erro ao processar mensagem do servidor:', err);
+        }
     };
 }
 
@@ -64,8 +68,15 @@ function scheduleReconnect() {
 }
 
 function send(payload) {
-    if (ws?.readyState === WebSocket.OPEN)
-        ws.send(JSON.stringify(payload));
+    if (ws?.readyState !== WebSocket.OPEN)
+        return;
+
+    // Apenas frames de vídeo são descartados se houver fila acumulada no socket.
+    // Mensagens de controle (ask, speech_end) devem ser sempre transmitidas.
+    if (payload.type === 'frame' && ws.bufferedAmount >= 65536)
+        return;
+
+    ws.send(JSON.stringify(payload));
 }
 
 export { connect, send };

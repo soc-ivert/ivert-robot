@@ -20,6 +20,7 @@ def create_app(robot: Robot) -> FastAPI:
     LOCKOUT_SECONDS = 600  # 10 minutos bloqueado após exceder o limite
     
     _failed_attempts: dict[str, list[float]] = {}
+    active_handler: MessageHandler | None = None
 
     def _is_locked_out(client_ip: str) -> bool:
 
@@ -104,8 +105,14 @@ def create_app(robot: Robot) -> FastAPI:
 
         await ws.accept()
         print(f"[SERVER] Conexão WebSocket aceita. Origem : {origin}")
+
+        nonlocal active_handler
+        if active_handler:
+            active_handler.dispose()
+
         handler = MessageHandler(robot, ws.send_text)
-        
+        active_handler = handler
+
         await handler.send_initial_state()
 
         try:
@@ -115,9 +122,17 @@ def create_app(robot: Robot) -> FastAPI:
                     payload = json.loads(packet)
                     await handler.route(payload)
                 except json.JSONDecodeError:
-                    print("[SERVER] Pacote inválido recebido")
+                    print("[SERVER] Pacote inválido recebido (JSON inválido)")
+                except Exception as e:
+                    print(f"[SERVER] Erro ao processar mensagem do WebSocket: {e}")
 
         except WebSocketDisconnect:
             print("[SERVER] Desconectado")
+        except Exception as e:
+            print(f"[SERVER] Conexão WebSocket encerrada com erro: {e}")
+        finally:
+            if active_handler is handler:
+                handler.dispose()
+                active_handler = None
 
     return app

@@ -31,6 +31,8 @@ def main():
         ssl_keyfile="key.pem",
         ssl_certfile="cert.pem",
         log_level="warning",
+        ws_ping_interval=None,
+        ws_ping_timeout=None,
     )
 
 if __name__ == "__main__":

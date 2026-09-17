@@ -4,7 +4,7 @@ from pathlib import Path
 from src.exceptions import AgentError, ChatCreationError, SystemPromptError
 import os
 
-MODEL = "gemini-2.5-flash-lite"
+MODEL = "gemini-3.1-flash-lite"
 
 class Agent():
     """ Agente de IA baseado na API do Google Gemini.
@@ -132,6 +132,13 @@ class Agent():
 
         try:
             response = await self._chat.send_message(user_input)
+
+            if response.usage_metadata:
+                in_tokens = response.usage_metadata.prompt_token_count
+                out_tokens = response.usage_metadata.candidates_token_count
+                total_turn = in_tokens + out_tokens
+                print(f"\n[TOKENS] Entrada: {in_tokens} | Saída: {out_tokens} | Total do turno: {total_turn}")
+
             return response.text
         except Exception as e:
             print("[AGENT] Erro:", e)
