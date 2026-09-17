@@ -64,7 +64,7 @@ function scheduleReconnect() {
     }, retryDelay);
 
     // Dobra o delay a cada falha, limitando o tempo máximo a 16 segundos
-    retryDelay = Math.min(retryDelay * 2, 16000);
+    retryDelay = Math.min(retryDelay * 2, 8000);
 }
 
 function send(payload) {
