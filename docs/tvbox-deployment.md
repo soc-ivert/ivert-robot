@@ -12,31 +12,6 @@ Será adotado `systemd` como mecanismo de inicialização automática e recupera
 - Configuração de rede (mDNS) já realizada conforme `docs/network-setup.md`
 > Este guia usa `/home/<usuario>/lobbybot` como caminho de exemplo. Substitua `<usuario>` pelo nome do usuário real do sistema em cada comando.
 
-### Variáveis de ambiente
-
-Crie o arquivo `.env` na raiz do projeto com o seguinte conteúdo, substituindo os valores de exemplo:
-
-```dotenv
-# Servidor
-HOST=0.0.0.0
-PORT=8484
-
-# Autenticação
-TABLET_ACCESS_TOKEN=<gere-um-token-seguro-aleatorio>
-
-# IA - Gemini
-GEMINI_API_KEY=<sua-chave-de-api-do-gemini>
-```
-
-| Variável | Descrição |
-|---|---|
-| `HOST` | Interface de rede onde o servidor escuta. |
-| `PORT` | Porta do servidor HTTPS. |
-| `TABLET_ACCESS_TOKEN` | Token de autenticação exigido nas requisições/WebSocket do tablet. |
-| `GEMINI_API_KEY` | Chave de API do Gemini usada pelo Agent. |
-
-> **Nota:** existe suporte planejado para migrar para o Google Cloud (Vertex AI) via `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION` e `GOOGLE_GENAI_USE_ENTERPRISE`, pendente de configuração de faturamento no GCP. Essas variáveis substituirão `GEMINI_API_KEY` quando ativadas, veja `.env.example`.
-
 ## Passo a passo
 
 ### 1. Atualizar o sistema
@@ -79,8 +54,32 @@ git clone https://github.com/codevinni/lobby-robot.git /home/<usuario>/lobbybot
 cd /home/<usuario>/lobbybot
 ```
 
+### 5. Variáveis de ambiente
 
-### 5. Criar o ambiente virtual
+Crie o arquivo `.env` na raiz do projeto com o seguinte conteúdo, substituindo os valores de exemplo:
+
+```dotenv
+# Servidor
+HOST=0.0.0.0
+PORT=8484
+
+# Autenticação
+TABLET_ACCESS_TOKEN=<gere-um-token-seguro-aleatorio>
+
+# IA - Gemini
+GEMINI_API_KEY=<sua-chave-de-api-do-gemini>
+```
+
+| Variável | Descrição |
+|---|---|
+| `HOST` | Interface de rede onde o servidor escuta. |
+| `PORT` | Porta do servidor HTTPS. |
+| `TABLET_ACCESS_TOKEN` | Token de autenticação exigido nas requisições/WebSocket do tablet. |
+| `GEMINI_API_KEY` | Chave de API do Gemini usada pelo Agent. |
+
+> **Nota:** existe suporte planejado para migrar para o Google Cloud (Vertex AI) via `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION` e `GOOGLE_GENAI_USE_ENTERPRISE`, pendente de configuração de faturamento no GCP. Essas variáveis substituirão `GEMINI_API_KEY` quando ativadas, veja `.env.example`.
+
+### 6. Criar o ambiente virtual
 
 ```bash
 python3.11 -m venv venv
@@ -88,7 +87,7 @@ source venv/bin/activate
 ```
 
 
-### 6. Instalar as dependências do projeto
+### 7. Instalar as dependências do projeto
 
 ```bash
 pip install --upgrade pip
@@ -97,7 +96,7 @@ pip install -r requirements.txt
 
 > **Atenção em dispositivos ARM com pouca memória:** a compilação do `dlib` é pesada e pode falhar silenciosamente por falta de RAM em TV Boxes com pouca memória. Se a instalação travar ou falhar sem erro claro, veja a seção de Troubleshooting sobre criação de swap temporário.
 
-### 7. Gerar o certificado HTTPS autoassinado
+### 8. Gerar o certificado HTTPS autoassinado
 
 Execute na raiz do projeto:
 
@@ -112,7 +111,7 @@ Esse comando irá gerar `key.pem` e `cert.pem`.
 
 
 
-### 9. Configurar o serviço systemd da aplicação
+### 10. Configurar o serviço systemd da aplicação
 
 ```bash
 sudo nano /etc/systemd/system/lobbybot.service
@@ -125,13 +124,14 @@ Conteúdo do arquivo:
 Description=Sistema do robo receptionista
 After=network-online.target avahi-daemon.service
 Wants=network-online.target
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple
 WorkingDirectory=/home/<usuario>/lobbybot
 ExecStart=/home/<usuario>/lobbybot/venv/bin/python main.py
 Environment=PYTHONUNBUFFERED=1
-Restart=on-failure
+Restart=always
 RestartSec=5
 User=<usuario>
 
@@ -142,7 +142,7 @@ WantedBy=multi-user.target
 - `Description`: texto identificador exibido em `systemctl status` e nos logs.
 - `WorkingDirectory`: define a pasta de trabalho do processo. Fundamental para que caminhos relativos no código resolvam corretamente.
 - `ExecStart=/home/<usuario>/lobbybot/venv/bin/python main.py`: chama o Python de dentro do venv.
-- `Restart=on-failure`: reinicia o processo automaticamente se ele encerrar com erro.
+- `Restart=always`: reinicia o processo automaticamente se ele encerrar por qualquer motivo.
 
 
 Aplicar e habilitar:
