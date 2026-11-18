@@ -4,6 +4,9 @@ O Ivert Robot é um agente de IA recepcionista desenvolvido para a Casa Verde (I
 
 O projeto foi projetado para operar em hardware simples e em funcionamento contínuo, sendo "plug and play", distribuindo responsabilidades entre um servidor Linux em TV Box e um tablet Android como interface interativa.
 
+<div align="center">
+   <img width="50%" alt="Captura de tela 2026-09-24 154427" src="https://github.com/user-attachments/assets/5d702932-d9bb-458c-b938-93d6312fbe62" />
+</div>
 
 ## Arquitetura
 
