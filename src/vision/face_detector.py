@@ -1,6 +1,11 @@
 import cv2
 import face_recognition as fcrg
 import threading, time
+import numpy as np
+from collections import deque
+
+SAMPLE_INTERVAL = 1.2  # Intervalo em segundos entre extrações de características faciais
+BUFFER_SIZE = 3        # Quantidade de amostras para o cálculo do centróide médio
 
 class FaceDetector:
     """ Gerencia a detecção e extração de características faciais em segundo plano.
@@ -26,7 +31,9 @@ class FaceDetector:
             O padrão é DEFAULT_SOURCE (processamento por push de frames).
         """
         self.current_face_encoding = None
-        self._is_encoding_captured = False
+        self._encoding_buffer = deque(maxlen=BUFFER_SIZE)
+        self._face_present = False
+        self._last_sample_time = 0.0
         self._video_capture = None
         self.frame = None
         self._face_locations = None
@@ -65,20 +72,24 @@ class FaceDetector:
 
     def clear_encoding(self):
         with self._lock:
-            self._is_encoding_captured = False
+            self._encoding_buffer.clear()
+            self._face_present = False
+            self._last_sample_time = 0.0
             self.current_face_encoding = None
 
     def get_current_encoding(self):
         """ Retorna o encoding facial atual de forma thread-safe.
 
-        Utiliza o lock interno para garantir que o valor lido não concorra
-        com uma escrita simultânea feita pela thread de detecção.
+        Retorna a média vetorial das amostras recentes do rosto presentes no buffer,
+        garantindo um centróide estável para reconhecimento e cadastro.
 
         Returns:
-            np.ndarray | None: O vetor facial atual, ou None se nenhum rosto estiver presente.
+            np.ndarray | None: O vetor facial médio atual, ou None se nenhum rosto estiver presente.
         """
         with self._lock:
-            return self.current_face_encoding
+            if not self._encoding_buffer:
+                return None
+            return np.mean(self._encoding_buffer, axis=0)
 
     def push_frame(self, frame):
         """ Injeta um frame capturado por uma fonte externa.
@@ -137,21 +148,27 @@ class FaceDetector:
                     self._face_locations = fcrg.face_locations(processed_frame)
 
                     if self._face_locations: # Se houver algum rosto sendo detectado
-                        if not self._is_encoding_captured: # Se o encoding ainda não tiver sido capturado 
-                            
-                            # Captura o mapeamento do rosto
+                        now = time.time()
+
+                        # Notifica evento de detecção apenas na transição ausente -> presente
+                        if not self._face_present:
+                            with self._lock:
+                                self._encoding_buffer.clear()
+                            self._face_present = True
+                            if self._on_face_detected:
+                                self._on_face_detected()
+
+                        # Coleta amostra se o buffer estiver vazio ou se decorreu o intervalo mínimo
+                        if not self._encoding_buffer or (now - self._last_sample_time >= SAMPLE_INTERVAL):
                             face_encodings = fcrg.face_encodings(processed_frame, self._face_locations)
                             if face_encodings:
                                 with self._lock:
-                                    self.current_face_encoding = face_encodings[0]
-                                    self._is_encoding_captured = True
-                                
-                                if self._on_face_detected:
-                                    self._on_face_detected()
+                                    self._encoding_buffer.append(face_encodings[0])
+                                    self.current_face_encoding = np.mean(self._encoding_buffer, axis=0)
+                                self._last_sample_time = now
 
                     else: # Se não houver nenhum rosto
-                        with self._lock:
-                            self._is_encoding_captured = False
+                        self._face_present = False
 
                     if self.source is not None:
                         time.sleep(0.02)
@@ -194,13 +211,14 @@ class FaceDetector:
             Frame processado.
         """
 
-        # Reduzindo o tamanho da imagem para 1/2 para processar mais rápido
-        resized_frame = cv2.resize(frame, (0, 0), fx=0.50, fy=0.50)
+        # Reduzindo o tamanho da imagem para 1/2 para processar mais rápido (DESATIVADO)
+        #resized_frame = cv2.resize(frame, (0, 0), fx=0.50, fy=0.50)
         
         # A biblioteca face_recognition trabalha com RGB. É necessário converter:
-        resized_frame_rgb = cv2.cvtColor(resized_frame, cv2.COLOR_BGR2RGB)
+        #resized_frame_rgb = cv2.cvtColor(resized_frame, cv2.COLOR_BGR2RGB)
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-        return resized_frame_rgb
+        return frame_rgb
     
     def set_face_callback(self, callback):
         """Registra o callback a ser invocado quando um rosto é detectado.
