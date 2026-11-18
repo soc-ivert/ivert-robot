@@ -10,6 +10,7 @@ from src.core.enums import RobotState
 
 IDLE_TIMEOUT = 30
 BUSY_TIMEOUT = 60
+MIN_FRAME_INTERVAL = 0.15  # Intervalo mínimo entre frames decodificados (~6.6 FPS)
 
 class MessageHandler:
     """ Coordena o fluxo de interação do robô.
@@ -31,6 +32,7 @@ class MessageHandler:
         self._robot.set_face_callback(self.on_face_detected)
         self._sleep_task: asyncio.Task | None = None
         self._disposed = False
+        self._last_frame_time = 0.0
 
     async def _safe_send(self, payload: dict) -> bool:
         """ Envia dados pelo WebSocket tr caso a conexão esteja fechada.
@@ -102,16 +104,23 @@ class MessageHandler:
         """ Decodifica e encaminha um frame de vídeo ao Robot.
 
         Executa a decodificação em thread separada via run_in_executor
-        para não bloquear o event loop do asyncio.
+        para não bloquear o event loop do asyncio. Descarta frames que
+        chegam mais rápido que o intervalo mínimo definido para evitar sobrecarga.
 
         Args:
             data: Dicionário contendo a imagem codificada em Base64 sob a chave 'image'.
         """
+        loop = asyncio.get_event_loop()
+        now = loop.time()
+        if now - self._last_frame_time < MIN_FRAME_INTERVAL:
+            return
+
         image_b64 = data.get("image")
         if not image_b64:
             return
 
-        loop = asyncio.get_event_loop()
+        self._last_frame_time = now
+
         frame = await loop.run_in_executor(None, self._decode_frame, image_b64)
 
         if frame is not None:

@@ -33,6 +33,7 @@ class FaceDetector:
         self._is_running = False
         self._thread = None
         self._lock = threading.Lock()
+        self._frame_event = threading.Event()
         self.source = source
         self._on_face_detected = None
 
@@ -52,6 +53,7 @@ class FaceDetector:
         """ Interrompe o ciclo de detecção e libera todos os recursos.
         """
         self._is_running = False
+        self._frame_event.set()
 
         if self._thread:
             self._thread.join() # Aguarda a thread finalizar
@@ -89,6 +91,7 @@ class FaceDetector:
         """
         with self._lock:
             self.frame = frame
+        self._frame_event.set()
 
     def __face_detection(self):
         """ Executa o loop contínuo de captura, amostragem e codificação facial.
@@ -115,12 +118,19 @@ class FaceDetector:
 
                         with self._lock:
                             self.frame = frame
+                    else:
+                        # Modo push: aguarda a chegada de um novo frame (timeout de 1s para verificação de parada)
+                        self._frame_event.wait(timeout=1.0)
+                        self._frame_event.clear()
+
+                    if not self._is_running:
+                        break
 
                     with self._lock:
                         frame = self.frame
+                        self.frame = None
 
                     if frame is None:
-                        time.sleep(0.02)
                         continue
 
                     processed_frame = self.__process_frame(frame)
@@ -143,7 +153,8 @@ class FaceDetector:
                         with self._lock:
                             self._is_encoding_captured = False
 
-                    time.sleep(0.02)
+                    if self.source is not None:
+                        time.sleep(0.02)
                 except Exception as e:
                     # Captura exceções menores no meio do loop para que uma falha no processamento de um frame não derrube a detecção permanentemente
                     print(f"[FaceDetector] Erro no processamento de frame: {e}")
