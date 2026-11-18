@@ -37,6 +37,12 @@ class Database:
         Como encodings faciais nunca são exatamente iguais entre fotos distintas, 
         a busca retorna o usuário mais próximo (distância euclidiana) cujo encoding 
         seja menor que `tolerance` (padrão 0.6, mesmo valor usado pela lib face_recognition).
+
+    Cache em memória:
+        Para evitar leituras repetidas ao banco de dados a cada busca facial, os usuários
+        e seus encodings são carregados em memória na inicialização e mantidos sincronizados
+        automaticamente a cada inserção. A matriz de encodings é pré-empilhada em uma única
+        ndarray 2D, eliminando a recriação a cada comparação.
     """
 
     def __init__(self, db_path: str = "data/bot.db", tolerance: float = 0.6) -> None:
@@ -55,6 +61,11 @@ class Database:
 
         self.tolerance = tolerance
         self._create_table()
+
+        # Cache em memória: carregado uma vez e atualizado incrementalmente a cada insert
+        self._cached_users: list[User] = []
+        self._cached_encodings: np.ndarray | None = None 
+        self._load_cache()
 
     def _connect(self) -> sqlite3.Connection:
         """ Estabelece e configura uma nova conexão com o banco de dados.
@@ -84,6 +95,33 @@ class Database:
         """
         with self._connect() as conn:
             conn.execute(sql)
+
+    def _load_cache(self) -> None:
+        """ Carrega todos os usuários do banco para o cache em memória.
+
+        Executado uma única vez na inicialização. Reconstrói a lista de User e a 
+        matriz de encodings pré-empilhada para buscas vetorizadas sem I/O.
+        """
+        sql = "SELECT * FROM users"
+
+        with self._connect() as conn:
+            rows = conn.execute(sql).fetchall()
+
+        self._cached_users = [self._row_to_user(row) for row in rows]
+        self._rebuild_encoding_matrix()
+
+        print(f"[DATABASE] Cache carregado com {len(self._cached_users)} usuários")
+
+    def _rebuild_encoding_matrix(self) -> None:
+        """ Reconstrói a matriz NumPy 2D com todos os encodings do cache.
+        
+        A matriz pré-empilhada permite calcular distâncias euclidianas contra todos
+        os usuários em uma única operação vetorizada, sem recriá-la a cada busca.
+        """
+        if self._cached_users:
+            self._cached_encodings = np.array([u.encoding for u in self._cached_users])
+        else:
+            self._cached_encodings = None
 
     @staticmethod
     def _ndarray_to_bytes(encoding: np.ndarray) -> bytes:
@@ -126,7 +164,7 @@ class Database:
         )
 
     def insert(self, user: User) -> User:
-        """ Insere um novo usuário no banco.
+        """ Insere um novo usuário no banco e atualiza o cache em memória.
        
         Args:
             user: Uma instância da dataclass User preenchida sem o identificador id.
@@ -144,6 +182,10 @@ class Database:
                 (user.name, self._ndarray_to_bytes(user.encoding)),
             )
             user.id = cursor.lastrowid
+
+        # Atualiza o cache em memória sem recarregar do banco
+        self._cached_users.append(user)
+        self._rebuild_encoding_matrix()
 
         return user
 
@@ -186,10 +228,10 @@ class Database:
         return [self._row_to_user(row) for row in rows]
 
     def _search_by_encoding(self, query: np.ndarray) -> list[User]:
-        """ Compara um mapeamento facial de busca com os rostos conhecidos salvos no banco.
+        """ Compara um mapeamento facial de busca com os rostos conhecidos em cache.
         
-        Carrega todos os encodings do banco e retorna os usuários dentro
-        da tolerância, ordenados por distância crescente.
+        Usa a matriz de encodings pré-empilhada em memória para calcular todas
+        as distâncias euclidianas sem acessar o banco.
 
         A distância euclidiana é equivalente ao que face_recognition usa
         internamente em face_recognition.compare_faces().
@@ -202,19 +244,15 @@ class Database:
             `tolerance`, ordenados do mais parecido ao mais distante.
         """
 
-        users = self.get_all()
-
-        if not users:
+        if self._cached_encodings is None:
             return []
 
-        stored = np.array([u.encoding for u in users])
-
-        # Distância euclidiana vetorizada para todos de uma vez
-        distances = np.linalg.norm(stored - query, axis=1)
+        # Distância euclidiana vetorizada contra todos os encodings do cache
+        distances = np.linalg.norm(self._cached_encodings - query, axis=1)
 
         matches = [
             (user, dist)
-            for user, dist in zip(users, distances)
+            for user, dist in zip(self._cached_users, distances)
             if dist < self.tolerance
         ]
 
