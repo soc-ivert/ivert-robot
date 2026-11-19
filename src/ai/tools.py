@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 import requests
 
-CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQwcJ1NL-CRep3M2o4-qEjkzmpZJ12XwQUo4tXf7GBcdYh_iTCrEUCvMWWn63XeNGbm7EN309dxkz22/pub?gid=0&single=true&output=csv"
+CSV_URL = "https://docs.google.com/spreadsheets/d/1mczDhNyTWzaYcBsdgghKwYnCjwthzJkwHKBHmxFJ1Pc/export?format=csv&gid=0"
 
 def create_tools(db: Database, face_detector: FaceDetector):
 
